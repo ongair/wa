@@ -4,19 +4,23 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'whatsapp/api/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "whatsapp-api"
-  gem.version       = Whatsapp::Api::VERSION
-  gem.authors       = ["Karol Sarnacki"]
-  gem.email         = ["sodercober@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
-  gem.license       = "MIT"
+  gem.name        = 'whatsapp-api'
+  gem.version     = Whatsapp::Api::VERSION
+  gem.authors     = ['Karol Sarnacki']
+  gem.email       = ['sodercober@gmail.com']
+  gem.description = %q{Ruby Client for the WhatsApp API}
+  gem.summary     = %q{Ruby Client for the WhatsApp API}
+  gem.homepage    = 'https://github.com/karolsarnacki/whatsapp-api'
+  gem.license     = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}) { |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.require_paths = ["lib"]
+  gem.require_paths = ['lib']
 
-  gem.add_development_dependency "rake"
+  gem.add_runtime_dependency 'ruby-rc4', '~> 0.1.5'
+
+  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'minitest', '>= 4.4.0'
+  gem.add_development_dependency 'simplecov', '>= 0.7.1'
 end
