@@ -1,4 +1,5 @@
-require "whatsapp/api/version"
+require 'whatsapp/api/version'
+require 'whatsapp/api/key_stream'
 
 module Whatsapp
   module Api
