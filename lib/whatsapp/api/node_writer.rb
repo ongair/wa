@@ -39,13 +39,13 @@ module Whatsapp
       def write_internal(node)
         len = 1
 
-        len += node.attribute_hash.size * 2 if node.attribute_hash
+        len += node.attributes.size * 2 if node.attributes
         len += 1 if node.children && node.children.size > 0
         len += 1 if node.data && node.data.size > 0
 
         write_list_start(len)
         write_string(node.tag)
-        write_attributes(node.attribute_hash)
+        write_attributes(node.attributes)
 
         write_bytes(node.data) if node.data && node.data.size > 0
         if node.children && node.children.size > 0
