@@ -7,7 +7,11 @@ module Whatsapp
       DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
       DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
-      attr_accessor :key
+      attr_accessor :key, :input
+
+      def initialize
+        @input = ''
+      end
 
       def next_tree(input = nil)
         @input = input if input
@@ -16,14 +20,17 @@ module Whatsapp
         stanza_size = peek_int16(1)
 
         if @input && stanza_size > @input.length
-          raise IOError.new('Incomplete message')
+          e       = IncompleteMessageException.new('Incomplete message')
+          e.input = @input
+
+          raise e
         end
 
         read_int24
 
-        if (stanza_flag & 8) && @key
+        if (stanza_flag & 8 == 8) && @key
           remaining_data = @input[stanza_size..-1]
-          @input         = @key.decode(@input[0..stanza_size]) + remaining_data
+          @input         = @key.decode(@input[0, stanza_size]) + remaining_data
         end
 
         stanza_size > 0 ? next_tree_internal : nil
@@ -72,10 +79,10 @@ module Whatsapp
       end
 
       def read_attributes(size)
-        attributes       = []
+        attributes       = {}
         attributes_count = (size - 2 + size % 2) / 2
 
-        attributes_count.times do |i|
+        attributes_count.times do
           key             = read_string(read_int8)
           value           = read_string(read_int8)
           attributes[key] = value
@@ -86,7 +93,7 @@ module Whatsapp
 
       def next_tree_internal
         token = read_int8
-        size = read_list_size(token)
+        size  = read_list_size(token)
         token = read_int8
 
         if token == 1
@@ -97,7 +104,7 @@ module Whatsapp
           return nil
         end
 
-        tag = read_string(token)
+        tag        = read_string(token)
         attributes = read_attributes(size)
 
         return Whatsapp::Api::Node.new(tag, attributes) if (size % 2) == 1
@@ -140,7 +147,7 @@ module Whatsapp
       end
 
       def peek_int24(offset = 0)
-        res = nil
+        res = 0
 
         if @input && @input.length >= 3 + offset
           res = @input[offset].ord << 16
@@ -160,7 +167,7 @@ module Whatsapp
       end
 
       def peek_int16(offset = 0)
-        res = nil
+        res = 0
 
         if @input && @input.length >= 2 + offset
           res = @input[offset].ord << 8
@@ -179,7 +186,7 @@ module Whatsapp
       end
 
       def peek_int8(offset = 0)
-        @input[offset].ord if @input && @input.length >= 1 + offset
+        @input && @input.length >= 1 + offset ? @input[offset].ord : 0
       end
 
       def read_int8
@@ -194,7 +201,7 @@ module Whatsapp
         res = ''
 
         if @input && @input.length >= len
-          res = @input[0, len]
+          res    = @input[0, len]
           @input = @input[len..-1]
         end
 

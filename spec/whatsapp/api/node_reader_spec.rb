@@ -10,4 +10,11 @@ describe Whatsapp::Api::NodeReader do
     @reader.key = key_stream
   end
 
+  it 'should' do
+    data = "\x00\x00\x05\xf8\x03\x01\x41\xab"
+
+    node = @reader.next_tree(data)
+    puts node
+  end
+
 end
