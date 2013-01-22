@@ -7,7 +7,7 @@ module Whatsapp
       DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
       DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
-      attr_accessor :key, :token_map
+      attr_accessor :key
 
       attr_reader :output
 
