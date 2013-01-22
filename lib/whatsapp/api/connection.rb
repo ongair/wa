@@ -180,7 +180,7 @@ module Whatsapp
       end
 
       def send_message_received(msg)
-        if request_node = msg.get_child('request')
+        if request_node = msg.child('request')
           xmlns = request_node.attribute('xmlns')
 
           if xmlns == 'urn:xmpp:receipts'
