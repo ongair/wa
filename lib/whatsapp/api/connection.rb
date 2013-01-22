@@ -132,6 +132,10 @@ module Whatsapp
         send_message_node(message_id, to, Whatsapp::Api::Node.new('body', {}, [], body))
       end
 
+      def close
+        @socket.close if @socket
+      end
+
       protected
 
       def add_features
