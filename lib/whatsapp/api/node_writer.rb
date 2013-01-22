@@ -95,7 +95,7 @@ module Whatsapp
       end
 
       def write_bytes(bytes)
-        len = bytes.length
+        len = bytes.bytesize
 
         if len >= 0x100
           @output << "\xfd" << write_int24(len)
@@ -103,7 +103,11 @@ module Whatsapp
           @output << "\xfc" << write_int8(len)
         end
 
-        @output << bytes
+        if bytes.is_a?(String)
+          bytes.each_byte { |b| @output << b.chr }
+        else
+          @output << bytes
+        end
       end
 
       def write_string(tag)
