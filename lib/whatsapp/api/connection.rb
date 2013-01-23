@@ -20,6 +20,8 @@ module Whatsapp
 
       attr_reader :account_info
 
+      attr_reader :reader, :challenge_data # For tests only!
+
       def initialize(number, imei, name)
         @login_status       = :disconnected
         @incomplete_message = ''

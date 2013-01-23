@@ -22,7 +22,7 @@ module Whatsapp
 
       def decode(data)
         # TODO: Hash check
-        @rc4.decrypt(data[4..-1])
+        @rc4.decrypt(data[4..-1] || '')
       end
 
     end
