@@ -30,7 +30,7 @@ module Whatsapp
 
         if (stanza_flag & 8 == 8) && @key
           remaining_data = @input[stanza_size..-1]
-          @input         = @key.decode(@input[0, stanza_size]) + remaining_data
+          @input         = "#{@key.decode(@input[0, stanza_size])}#{remaining_data}"
         end
 
         stanza_size > 0 ? next_tree_internal : nil
