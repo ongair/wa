@@ -1,6 +1,7 @@
 require 'socket'
 require 'base64'
 require 'pbkdf2'
+require 'timeout'
 
 include Socket::Constants
 
@@ -66,9 +67,13 @@ module Whatsapp
       end
 
       def read_data
-        buffer = ''
+        res, buffer = '', ''
 
-        res = @socket.recv(1024)
+        begin
+          Timeout::timeout(TIMEOUT) { res = @socket.recv(1024) }
+        rescue Timeout::Error
+        end
+
         if res && res.length > 0
           buffer              = "#{@incomplete_message}#{res}"
           @incomplete_message = ''
