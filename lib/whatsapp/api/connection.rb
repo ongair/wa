@@ -1,7 +1,5 @@
-require 'socket'
 require 'base64'
 require 'pbkdf2'
-require 'timeout'
 
 include Socket::Constants
 
@@ -17,7 +15,8 @@ module Whatsapp
       WHATSAPP_VERSION      = '2.8.7'
       DEVICE                = 'iPhone'
       PORT                  = 5222
-      TIMEOUT               = 2
+      OPERATION_TIMEOUT     = 2
+      CONNECT_TIMEOUT       = 5
 
       attr_reader :account_info
 
@@ -25,7 +24,7 @@ module Whatsapp
 
       def initialize(number, imei, name)
         @login_status       = :disconnected
-        @incomplete_message = ''
+        @incomplete_message = new_binary_string
         @account_info       = nil
 
         @message_queue = []
@@ -43,7 +42,7 @@ module Whatsapp
       end
 
       def connect
-        @socket = TCPSocket.open(WHATSAPP_HOST, PORT)
+        @socket = Whatsapp::Api::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT)
       end
 
       def poll_messages
@@ -67,24 +66,23 @@ module Whatsapp
       end
 
       def read_data
-        res, buffer = '', ''
+        buffer = new_binary_string
 
         begin
-          Timeout::timeout(TIMEOUT) { res = @socket.recv(1024) }
-        rescue Timeout::Error
+          @socket.read(1024, buffer)
+        rescue OperationTimeout
         end
 
-        if res && res.length > 0
-          buffer              = "#{@incomplete_message}#{res}"
-          @incomplete_message = ''
+        if buffer && buffer.length > 0
+          buffer              = "#{@incomplete_message}#{buffer}"
+          @incomplete_message = new_binary_string
         end
 
         buffer
       end
 
       def send_data(data)
-        @socket.write data
-        @socket.flush
+        @socket.send(data)
       end
 
       def login
@@ -236,6 +234,20 @@ module Whatsapp
         end
       rescue IncompleteMessageException => e
         @incomplete_message = e.input
+      end
+      
+      private
+
+      if defined?(Encoding)
+        BINARY_ENCODING = Encoding.find('binary')
+
+        def new_binary_string
+          ''.force_encoding(BINARY_ENCODING)
+        end
+      else
+        def new_binary_string
+          ''
+        end
       end
 
     end
