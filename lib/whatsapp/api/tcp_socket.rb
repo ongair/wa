@@ -29,7 +29,7 @@ module Whatsapp
 
         @socket_address = Socket.pack_sockaddr_in(@port, @address)
         @socket         = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
-        #@socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+        @socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 
         connect
       end
