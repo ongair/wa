@@ -117,7 +117,7 @@ module Whatsapp
       end
 
       def is_list_tag(token)
-        (token == 248) || (token == 0) || (token == 249)
+        (token == 0) || (token == 0xf8) || (token == 0xf9)
       end
 
       def read_list(token)
@@ -135,7 +135,9 @@ module Whatsapp
       def read_list_size(token)
         size = 0
 
-        if token == 0xf8
+        if token == 0
+          size = 0
+        elsif token == 0xf8
           size = read_int8
         elsif token == 0xf9
           size = read_int16
