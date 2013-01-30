@@ -23,6 +23,14 @@ module Whatsapp
       attr_reader :reader, :challenge_data # For tests only!
 
       def initialize(number, imei, name)
+        @number = number
+        @imei   = imei
+        @name   = name
+
+        reset
+      end
+
+      def reset
         @login_status       = :disconnected
         @incomplete_message = new_binary_string
         @account_info       = nil
@@ -35,10 +43,6 @@ module Whatsapp
 
         @input_key  = nil
         @output_key = nil
-
-        @number = number
-        @imei   = imei
-        @name   = name
       end
 
       def connect
@@ -139,6 +143,8 @@ module Whatsapp
 
       def close
         @socket.close if @socket
+
+        reset
       end
 
       protected
@@ -215,6 +221,10 @@ module Whatsapp
                 'creation'   => node.attribute('creation'),
                 'expiration' => node.attribute('expiration')
             }
+          end
+
+          if node.tag == 'failure' && node.child('not-authorized')
+            raise 'Authentication failed'
           end
 
           if node.tag == 'message'

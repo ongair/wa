@@ -52,11 +52,10 @@ module Whatsapp
         # Block on data to read for @op_timeout seconds
         begin
           ready = IO.select([@socket], nil, [@socket], @op_timeout)
-          unless ready
-            raise OperationTimeout
-          end
-        rescue IOError
-          raise ConnectionFailure
+
+          raise OperationTimeout unless ready
+        rescue IOError => ex
+          raise ConnectionFailure, ex
         end
 
         # Read data from socket

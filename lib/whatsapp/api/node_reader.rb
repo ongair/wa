@@ -28,9 +28,13 @@ module Whatsapp
 
         read_int24
 
-        if (stanza_flag & 8 == 8) && @key
-          remaining_data = @input[stanza_size..-1]
-          @input         = "#{@key.decode(@input[0, stanza_size])}#{remaining_data}"
+        if stanza_flag & 8 == 8
+          if @key
+            remaining_data = @input[stanza_size..-1]
+            @input         = "#{@key.decode(@input[0, stanza_size])}#{remaining_data}"
+          else
+            raise 'No key for encrypted data'
+          end
         end
 
         stanza_size > 0 ? next_tree_internal : nil
