@@ -18,8 +18,8 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
 
-  gem.add_runtime_dependency 'ruby-rc4', '~> 0.1.5'
-  gem.add_runtime_dependency 'pbkdf2', '~> 0.1.0'
+  gem.add_runtime_dependency 'ruby-rc4'
+  gem.add_runtime_dependency 'pbkdf2'
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'minitest', '>= 4.4.0'
