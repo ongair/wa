@@ -1,7 +1,7 @@
-require 'socket'
+require 'tcp_socket'
 require 'timeout'
 
-# Code copied from "Ruby driver for MongoDB" project (https://github.com/mongodb/mongo-ruby-driver).
+# Code copied from "Ruby driver for MongoDB" project (https://github.com/mongodb/mongo-ruby-driver/blob/master/lib/mongo/util/tcp_socket.rb).
 #
 # Setting timeout using SO_RCVTIMEO socket option would not work, and using Ruby's Timeout.timeout is not recommended,
 # the best option is to use IO.select.
@@ -23,13 +23,8 @@ module Whatsapp
         @connect_timeout = connect_timeout
         @pid             = Process.pid
 
-        # TODO: Prefer ipv6 if server is ipv6 enabled
-        @address         = Socket.getaddrinfo(host, nil, Socket::AF_INET).first[3]
-        @port            = port
-
-        @socket_address = Socket.pack_sockaddr_in(@port, @address)
-        @socket         = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
-        @socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+        @address = ::TCPSocket.gethostbyname(host)[3]
+        @port    = port
 
         connect
       end
@@ -37,10 +32,10 @@ module Whatsapp
       def connect
         if @connect_timeout
           Timeout::timeout(@connect_timeout, OperationTimeout) do
-            @socket.connect(@socket_address)
+            @socket = ::TCPSocket.new(@address, @port)
           end
         else
-          @socket.connect(@socket_address)
+          @socket = ::TCPSocket.new(@address, @port)
         end
       end
 
