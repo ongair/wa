@@ -1,4 +1,4 @@
-require 'tcp_socket'
+require 'socket'
 require 'timeout'
 
 # Code copied from "Ruby driver for MongoDB" project (https://github.com/mongodb/mongo-ruby-driver/blob/master/lib/mongo/util/tcp_socket.rb).
