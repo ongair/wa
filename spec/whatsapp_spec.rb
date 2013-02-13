@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe Whatsapp::Api do
+describe Whatsapp do
 
   it 'should have a version number' do
-    Whatsapp::Api::VERSION.wont_be_nil
+    Whatsapp::VERSION.should_not be_nil
   end
 
 end

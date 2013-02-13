@@ -2,9 +2,9 @@ require 'openssl'
 require 'rc4'
 
 module Whatsapp
-  module Api
+  module Protocol
 
-    class KeyStream
+    class Keystream
       INIT = (0..255).map(&:chr).join
 
       def initialize(key)

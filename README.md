@@ -1,4 +1,4 @@
-# Whatsapp::Api
+# Whatsapp
 
 TODO: Write a gem description
 
@@ -6,7 +6,7 @@ TODO: Write a gem description
 
 Add this line to your application's Gemfile:
 
-    gem 'whatsapp-api'
+    gem 'whatsapp'
 
 And then execute:
 
@@ -14,7 +14,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install whatsapp-api
+    $ gem install whatsapp
 
 ## Usage
 

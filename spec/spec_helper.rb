@@ -8,4 +8,4 @@ gem 'minitest' # ensure we are using the gem version
 require 'minitest/spec'
 require 'minitest/autorun'
 
-require 'whatsapp/api'
+require 'whatsapp'

@@ -1,10 +1,17 @@
 require 'base64'
 require 'pbkdf2'
 
-include Socket::Constants
+require 'whatsapp/protocol/node_writer'
+require 'whatsapp/protocol/node_reader'
+require 'whatsapp/protocol/node'
+require 'whatsapp/protocol/features_node'
+require 'whatsapp/protocol/auth_node'
+require 'whatsapp/protocol/auth_response_node'
+require 'whatsapp/protocol/keystream'
+require 'whatsapp/net/tcp_socket'
 
 module Whatsapp
-  module Api
+  module Protocol
 
     class Connection
       WHATSAPP_HOST         = 'c.whatsapp.net'
@@ -20,14 +27,12 @@ module Whatsapp
 
       attr_reader :account_info
 
-      attr_reader :reader, :challenge_data # For tests only!
-
-      def initialize(number, imei, name)
-        @number = number
-        @imei   = imei
-        @name   = name
-
+      def initialize(number, name, options = {})
         reset
+
+        @number = number
+        @name   = name
+        @proxy  = options[:proxy]
       end
 
       def reset
@@ -38,15 +43,15 @@ module Whatsapp
         @message_queue = []
 
         @socket = nil
-        @writer = Whatsapp::Api::NodeWriter.new
-        @reader = Whatsapp::Api::NodeReader.new
+        @writer = NodeWriter.new
+        @reader = NodeReader.new
 
         @input_key  = nil
         @output_key = nil
       end
 
       def connect
-        @socket = Whatsapp::Api::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT)
+        @socket = Whatsapp::Net::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT, @proxy)
       end
 
       def poll_messages
@@ -59,14 +64,6 @@ module Whatsapp
         @message_queue = []
 
         res
-      end
-
-      def typing_message(to)
-        mama = to.index('-') ? WHATSAPP_GROUP_SERVER : WHATSAPP_SERVER
-
-        send_node Whatsapp::Api::Node.new('message', {'to' => "#{to}@#{mama}", 'type' => 'chat'}, [
-            Whatsapp::Api::Node.new('composing', {'xmlns' => 'http://jabber.org/protocol/chatstates'})
-        ])
       end
 
       def read_data
@@ -86,59 +83,24 @@ module Whatsapp
       end
 
       def send_data(data)
-        @socket.send(data)
+        @socket.write(data)
       end
 
-      def login
+      def auth(password)
         resource = "#{DEVICE}-#{WHATSAPP_VERSION}-#{PORT}"
         data     = @writer.start_stream(WHATSAPP_SERVER, resource)
 
-        feat = add_features
-        auth = add_auth
         send_data(data)
-        send_node(feat)
-        send_node(auth)
+        send_node(FeaturesNode.new)
+        send_node(AuthNode.new(@number))
 
-        data = read_data
-        process_inbound_data(data)
-        data = add_auth_response
-        send_node(data)
+        process_inbound_data(read_data)
+        send_node(AuthResponseNode.new(auth_response(password)))
         @reader.key = @input_key
         @writer.key = @output_key
 
         cnt = 0
         process_inbound_data(read_data) while ((cnt += 1) < 100) && (@login_status == :disconnected)
-
-        send_nickname
-        send_presence
-      end
-
-      def send_nickname
-        send_node Whatsapp::Api::Node.new('presence', {'name' => @name})
-      end
-
-      def send_presence(type = 'available')
-        send_node Whatsapp::Api::Node.new('presence', {'type' => type, 'name' => @name})
-      end
-
-      def send_message_node(message_id, to, node)
-        x_node = Whatsapp::Api::Node.new('x', {'xmlns' => 'jabber:x:event'}, [
-            Whatsapp::Api::Node.new('server')
-        ])
-
-        mama = to.index('-') ? WHATSAPP_GROUP_SERVER : WHATSAPP_SERVER
-
-        message_node = Whatsapp::Api::Node.new('message', {
-            'to'   => "#{to}@#{mama}",
-            'type' => 'chat',
-            'id'   => message_id
-        },                                     [x_node, node])
-
-        send_node(message_node)
-      end
-
-      def message(message_id, to, body)
-        send_message_node(message_id, to, Whatsapp::Api::Node.new('body', {}, [], body))
       end
 
       def close
@@ -147,43 +109,21 @@ module Whatsapp
         reset
       end
 
+      def send_node(node)
+        send_data(@writer.write(node))
+      end
+
       protected
 
-      def add_features
-        Whatsapp::Api::Node.new('stream:features', {}, [
-            Whatsapp::Api::Node.new('receipt_acks')
-        ])
-      end
-
-      def add_auth
-        Whatsapp::Api::Node.new('auth', {
-            'xmlns'     => 'urn:ietf:params:xml:ns:xmpp-sasl',
-            'mechanism' => 'WAUTH-1',
-            'user'      => @number
-        })
-      end
-
-      def authenticate
-        raw_password = Base64.decode64(@imei)
+      def auth_response(password)
+        raw_password = Base64.decode64(password)
 
         key = PBKDF2.new(hash_function: :sha1, password: raw_password, salt: @challenge_data, iterations: 16, key_length: 20).bin_string
 
-        @input_key  = Whatsapp::Api::KeyStream.new(key)
-        @output_key = Whatsapp::Api::KeyStream.new(key)
+        @input_key  = Whatsapp::Protocol::Keystream.new(key)
+        @output_key = Whatsapp::Protocol::Keystream.new(key)
 
         @output_key.encode("#{@number}#{@challenge_data}#{Time.now.to_i}", false)
-      end
-
-      def add_auth_response
-        response = authenticate
-
-        Whatsapp::Api::Node.new('response', {
-            'xmlns' => 'urn:ietf:params:xml:ns:xmpp-sasl'
-        },                      [], response)
-      end
-
-      def send_node(node)
-        send_data(@writer.write(node))
       end
 
       def process_challenge(node)
@@ -195,8 +135,8 @@ module Whatsapp
           xmlns = request_node.attribute('xmlns')
 
           if xmlns == 'urn:xmpp:receipts'
-            received_node = Whatsapp::Api::Node.new('received', {'xmlns' => 'urn:xmpp:receipts'})
-            message_node  = Whatsapp::Api::Node.new('message', {
+            received_node = Whatsapp::Protocol::Node.new('received', {'xmlns' => 'urn:xmpp:receipts'})
+            message_node  = Whatsapp::Protocol::Node.new('message', {
                 'to'   => msg.attribute('from'),
                 'type' => 'chat',
                 'id'   => msg.attribute('id')
@@ -216,10 +156,10 @@ module Whatsapp
           elsif node.tag == 'success'
             @login_status = :connected
             @account_info = {
-                'status'     => node.attribute('status'),
-                'kind'       => node.attribute('kind'),
-                'creation'   => node.attribute('creation'),
-                'expiration' => node.attribute('expiration')
+                status:     node.attribute('status'),
+                kind:       node.attribute('kind'),
+                creation:   node.attribute('creation'),
+                expiration: node.attribute('expiration')
             }
           end
 
@@ -245,7 +185,7 @@ module Whatsapp
       rescue IncompleteMessageException => e
         @incomplete_message = e.input
       end
-      
+
       private
 
       if defined?(Encoding)

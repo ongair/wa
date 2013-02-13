@@ -1,14 +1,14 @@
 module Whatsapp
-  module Api
+  module Protocol
 
     class Node
       attr_accessor :tag, :attributes, :children, :data
 
       def initialize(tag, attributes = {}, children = [], data = nil)
-        self.tag        = tag
-        self.attributes = attributes || {}
-        self.children   = children
-        self.data       = data
+        @tag        = tag
+        @attributes = attributes || {}
+        @children   = children
+        @data       = data
       end
 
       def attribute(name)
