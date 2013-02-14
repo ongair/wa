@@ -1,6 +1,6 @@
 require 'socket'
 require 'timeout'
-require 'proxifier/proxy'
+require 'proxifier'
 require 'whatsapp/errors'
 
 # Code partially copied from "Ruby driver for MongoDB" project (https://github.com/mongodb/mongo-ruby-driver/blob/master/lib/mongo/util/tcp_socket.rb).
@@ -66,22 +66,23 @@ module Whatsapp
       def closed?
         @socket.closed?
       end
-    end
 
-    private
+      private
 
-    def connect
-      if @connect_timeout
-        Timeout::timeout(@connect_timeout, OperationTimeout) do
+      def connect
+        if @connect_timeout
+          Timeout::timeout(@connect_timeout, OperationTimeout) do
+            open_socket
+          end
+        else
           open_socket
         end
-      else
-        open_socket
       end
-    end
 
-    def open_socket
-      @socket = @proxy ? @proxy.open(@address, @port) : ::TCPSocket.new(@address, @port)
+      def open_socket
+        @socket = @proxy ? @proxy.open(@address, @port) : ::TCPSocket.new(@address, @port)
+      end
+
     end
 
   end
