@@ -26,6 +26,14 @@ module Whatsapp
       @connection.auth(password)
     end
 
+    def poll_messages
+      @connection.poll_messages
+    end
+
+    def get_messages
+      @connection.get_messages
+    end
+
     def send(message)
       mama = message.to.index('-') ? Protocol::Connection::WHATSAPP_GROUP_SERVER : Protocol::Connection::WHATSAPP_SERVER
 
