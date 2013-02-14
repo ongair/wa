@@ -1,10 +1,10 @@
 require 'spec_helper'
 require 'pbkdf2'
 
-describe Whatsapp::Api::KeyStream do
+describe Whatsapp::Protocol::Keystream do
 
   before do
-    @key = Whatsapp::Api::KeyStream.new('My secret key')
+    @key = Whatsapp::Protocol::Keystream.new('My secret key')
   end
 
   it 'should encode data and append crc' do
@@ -28,7 +28,7 @@ describe Whatsapp::Api::KeyStream do
 
   it 'should encode empty string' do
     key = PBKDF2.new(hash_function: :sha1, password: 'My secret', salt: 'My challenge', iterations: 16, key_length: 20).bin_string
-    key_stream = Whatsapp::Api::KeyStream.new(key)
+    key_stream = Whatsapp::Protocol::Keystream.new(key)
 
     key.must_equal "\xd0\xd5\x49\x6d\x2b\x25\x5b\xe4\xcd\xe1\xd7\x20\xeb\xdc\xff\x8d\x94\x40\x69\xe5"
     key_stream.encode('').must_equal "\x3a\x40\x00\x85"

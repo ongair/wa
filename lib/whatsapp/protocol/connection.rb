@@ -43,8 +43,8 @@ module Whatsapp
         @message_queue = []
 
         @socket = nil
-        @writer = NodeWriter.new
-        @reader = NodeReader.new
+        @writer = ::Whatsapp::Protocol::NodeWriter.new
+        @reader = ::Whatsapp::Protocol::NodeReader.new
 
         @input_key  = nil
         @output_key = nil
