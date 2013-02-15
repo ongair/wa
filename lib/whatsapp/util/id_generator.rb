@@ -15,9 +15,11 @@ module Whatsapp
       end
 
       def next
+        now = Time.new.to_f.to_s.split('.', 2)
+
         @id += 1
 
-        "#{Time.new.to_i}-#{@id}"
+        "#{now[0]}#{now[1][0, 3]}#{100 + rand(900)}#{@id}"
       end
     end
 
