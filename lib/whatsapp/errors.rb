@@ -10,6 +10,9 @@ module Whatsapp
   class OperationTimeout < SocketError
   end
 
+  class ProxyError < SocketError
+  end
+
   class ConnectionFailure < RuntimeError
   end
 

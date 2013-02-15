@@ -80,7 +80,18 @@ module Whatsapp
       end
 
       def open_socket
-        @socket = @proxy ? @proxy.open(@address, @port) : ::TCPSocket.new(@address, @port)
+        @socket = if @proxy
+                    begin
+                      @proxy.open(@address, @port)
+                    rescue => e
+                      proxy_error = Whatsapp::ProxyError.new(e.message)
+                      proxy_error.set_backtrace(e.backtrace)
+
+                      raise proxy_error
+                    end
+                  else
+                    ::TCPSocket.new(@address, @port)
+                  end
       end
 
     end
