@@ -19,8 +19,8 @@ module Whatsapp
       WHATSAPP_REALM        = 's.whatsapp.net'
       WHATSAPP_GROUP_SERVER = 'g.us'
       WHATSAPP_DIGEST       = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION      = '2.8.7'
-      DEVICE                = 'iPhone'
+      WHATSAPP_VERSION      = '2.9.1547'
+      DEVICE                = 'Android'
       PORT                  = 5222
       OPERATION_TIMEOUT     = 2
       CONNECT_TIMEOUT       = 5
@@ -164,7 +164,7 @@ module Whatsapp
           end
 
           if node.tag == 'failure' && node.child('not-authorized')
-            raise 'Authentication failed'
+            raise Whatsapp::AuthenticationError, 'Authentication failed'
           end
 
           if node.tag == 'message'
