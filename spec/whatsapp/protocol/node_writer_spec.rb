@@ -1,19 +1,19 @@
 require 'spec_helper'
 require 'pbkdf2'
 
-describe Whatsapp::Protocol::NodeWriter do
+describe WhatsApp::Protocol::NodeWriter do
 
   before do
     key        = PBKDF2.new(hash_function: :sha1, password: 'My secret', salt: 'My challenge', iterations: 16, key_length: 20).bin_string
-    key_stream = Whatsapp::Protocol::Keystream.new(key)
+    key_stream = WhatsApp::Protocol::Keystream.new(key)
 
-    @writer     = Whatsapp::Protocol::NodeWriter.new
+    @writer     = WhatsApp::Protocol::NodeWriter.new
     @writer.key = key_stream
   end
 
   it 'sholud write node' do
-    child = Whatsapp::Protocol::Node.new('my-child', {'child-one' => 'value-child-one', 'child-two' => 'value-child-two'}, nil, 'my-child-random-data')
-    node  = Whatsapp::Protocol::Node.new('my-tag', {'one' => 'value-one', 'two' => 'value-two'}, [child], 'my-random-data')
+    child = WhatsApp::Protocol::Node.new('my-child', {'child-one' => 'value-child-one', 'child-two' => 'value-child-two'}, nil, 'my-child-random-data')
+    node  = WhatsApp::Protocol::Node.new('my-tag', {'one' => 'value-one', 'two' => 'value-two'}, [child], 'my-random-data')
 
     @writer.write(node).must_equal "\x10\x00\x9a\x5a\xde\x0c\x01\x7e\x32\xef\xce\x96\x83\x1a\xa9\x2b\x1d\x69\xb7\x19\x35\x14\xef\x53\x64\xaa\x9c\x54\xb7\x60\x31\xb6\xd0\x3f\xa5\x11\xca\x44\xed\x29\x68\xb0\x70\xc7\xc3\xd9\x8b\x93\xb1\x07\x3d\xbf\x6b\xae\x65\xc1\x6e\x6a\x2c\xd6\xed\xad\x72\xda\xa6\xd3\x94\xc8\xd7\xbe\x04\x35\xcc\x08\x9a\xe3\x8d\xe8\xf0\x7d\xf3\x64\xc0\xc5\x6f\x00\x0c\xdf\x2f\xf7\x60\x04\xd8\x5f\xce\x03\x23\xdb\x92\x10\x50\xc7\x5f\x66\xf6\xb4\x97\x9a\xb7\x35\xc2\xc7\x95\x80\x99\xff\xbf\xbb\x10\x8e\x5d\x95\x03\xfc\x5e\x77\xe9\xaa\x41\x15\xfd\xf6\xf9\xa3\xdc\xbe\x66\x38\xff\xce\x36\x37\x69\xb0\x18\xa1\x68\x74\x1e\x2a\x6e\xf3\x89\xfc\x6a\x21\x89"
   end

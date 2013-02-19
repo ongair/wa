@@ -1,7 +1,7 @@
 require 'openssl'
 require 'rc4'
 
-module Whatsapp
+module WhatsApp
   module Protocol
 
     class Keystream

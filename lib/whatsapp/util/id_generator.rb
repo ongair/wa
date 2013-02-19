@@ -1,6 +1,6 @@
 require 'singleton'
 
-module Whatsapp
+module WhatsApp
   module Util
 
     class IdGenerator

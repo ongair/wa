@@ -5,7 +5,7 @@ require 'whatsapp/version'
 
 Gem::Specification.new do |gem|
   gem.name        = 'whatsapp'
-  gem.version     = Whatsapp::VERSION
+  gem.version     = WhatsApp::VERSION
   gem.authors     = ['Karol Sarnacki']
   gem.email       = ['sodercober@gmail.com']
   gem.description = %q{Ruby Client for the WhatsApp API}

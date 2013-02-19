@@ -1,6 +1,6 @@
 require 'socket'
 
-module Whatsapp
+module WhatsApp
 
   class IncompleteMessageException < IOError
     attr_accessor :input

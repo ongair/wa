@@ -1,7 +1,7 @@
 require 'whatsapp/util/id_generator'
 require 'whatsapp/protocol/node'
 
-module Whatsapp
+module WhatsApp
 
   class Message < Protocol::Node
     attr_reader :to, :body, :message_id

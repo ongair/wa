@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe Whatsapp::Protocol::NodeReader do
+describe WhatsApp::Protocol::NodeReader do
 
   before do
     key        = PBKDF2.new(hash_function: :sha1, password: 'My secret', salt: 'My challenge', iterations: 16, key_length: 20).bin_string
-    key_stream = Whatsapp::Protocol::Keystream.new(key)
+    key_stream = WhatsApp::Protocol::Keystream.new(key)
 
-    @reader     = Whatsapp::Protocol::NodeReader.new
+    @reader     = WhatsApp::Protocol::NodeReader.new
     @reader.key = key_stream
   end
 

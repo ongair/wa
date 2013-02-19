@@ -1,3 +1,3 @@
-module Whatsapp
-  VERSION = '0.0.2'
+module WhatsApp
+  VERSION = '0.0.3'
 end

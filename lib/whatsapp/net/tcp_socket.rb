@@ -9,7 +9,7 @@ require 'whatsapp/errors'
 # the best option is to use IO.select.
 #
 # See http://stackoverflow.com/questions/9853516/set-socket-timeout-in-ruby-via-so-rcvtimeo-socket-option
-module Whatsapp
+module WhatsApp
 
   module Net
 
@@ -84,7 +84,7 @@ module Whatsapp
                     begin
                       @proxy.open(@address, @port)
                     rescue => e
-                      proxy_error = Whatsapp::ProxyError.new(e.message)
+                      proxy_error = WhatsApp::ProxyError.new(e.message)
                       proxy_error.set_backtrace(e.backtrace)
 
                       raise proxy_error

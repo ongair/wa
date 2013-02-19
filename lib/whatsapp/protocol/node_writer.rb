@@ -1,6 +1,6 @@
 require 'yaml'
 
-module Whatsapp
+module WhatsApp
   module Protocol
 
     class NodeWriter

@@ -2,7 +2,7 @@ require 'whatsapp/protocol/connection'
 require 'whatsapp/protocol/composing_node'
 require 'whatsapp/protocol/presence_node'
 
-module Whatsapp
+module WhatsApp
 
   class Client
     attr_reader :number, :name, :options

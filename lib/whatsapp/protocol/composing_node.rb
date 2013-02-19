@@ -1,6 +1,6 @@
 require 'whatsapp/protocol/node'
 
-module Whatsapp
+module WhatsApp
   module Protocol
 
     class ComposingNode < Node

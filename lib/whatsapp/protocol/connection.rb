@@ -10,7 +10,7 @@ require 'whatsapp/protocol/auth_response_node'
 require 'whatsapp/protocol/keystream'
 require 'whatsapp/net/tcp_socket'
 
-module Whatsapp
+module WhatsApp
   module Protocol
 
     class Connection
@@ -43,15 +43,15 @@ module Whatsapp
         @message_queue = []
 
         @socket = nil
-        @writer = ::Whatsapp::Protocol::NodeWriter.new
-        @reader = ::Whatsapp::Protocol::NodeReader.new
+        @writer = ::WhatsApp::Protocol::NodeWriter.new
+        @reader = ::WhatsApp::Protocol::NodeReader.new
 
         @input_key  = nil
         @output_key = nil
       end
 
       def connect
-        @socket = Whatsapp::Net::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT, @proxy)
+        @socket = WhatsApp::Net::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT, @proxy)
       end
 
       def poll_messages
@@ -120,8 +120,8 @@ module Whatsapp
 
         key = PBKDF2.new(hash_function: :sha1, password: raw_password, salt: @challenge_data, iterations: 16, key_length: 20).bin_string
 
-        @input_key  = Whatsapp::Protocol::Keystream.new(key)
-        @output_key = Whatsapp::Protocol::Keystream.new(key)
+        @input_key  = WhatsApp::Protocol::Keystream.new(key)
+        @output_key = WhatsApp::Protocol::Keystream.new(key)
 
         @output_key.encode("#{@number}#{@challenge_data}#{Time.now.to_i}", false)
       end
@@ -135,8 +135,8 @@ module Whatsapp
           xmlns = request_node.attribute('xmlns')
 
           if xmlns == 'urn:xmpp:receipts'
-            received_node = Whatsapp::Protocol::Node.new('received', {'xmlns' => 'urn:xmpp:receipts'})
-            message_node  = Whatsapp::Protocol::Node.new('message', {
+            received_node = WhatsApp::Protocol::Node.new('received', {'xmlns' => 'urn:xmpp:receipts'})
+            message_node  = WhatsApp::Protocol::Node.new('message', {
                 'to'   => msg.attribute('from'),
                 'type' => 'chat',
                 'id'   => msg.attribute('id')
@@ -164,7 +164,7 @@ module Whatsapp
           end
 
           if node.tag == 'failure' && node.child('not-authorized')
-            raise Whatsapp::AuthenticationError, 'Authentication failed'
+            raise WhatsApp::AuthenticationError, 'Authentication failed'
           end
 
           if node.tag == 'message'

@@ -1,4 +1,4 @@
-module Whatsapp
+module WhatsApp
   module Protocol
 
     class Node

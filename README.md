@@ -1,4 +1,4 @@
-# Whatsapp
+# WhatsApp
 
 TODO: Write a gem description
 
