@@ -6,10 +6,10 @@ module Whatsapp
     class Node
       attr_accessor :tag, :attributes, :children, :data
 
-      def initialize(tag, attributes = {}, children = [], data = nil)
+      def initialize(tag, attributes = nil, children = nil, data = nil)
         @tag        = tag
         @attributes = attributes || {}
-        @children   = children
+        @children   = children || []
         @data       = data
       end
 
@@ -40,7 +40,7 @@ module Whatsapp
 
         if children.any? || data
           xml << ">"
-          xml << "#{'\n  ' if formatted && children.any?}#{CGI::escapeHTML(data).lines.map { |l| "  #{l}" }}" if data
+          xml << "#{'\n  ' if formatted && children.any?}#{CGI::escapeHTML(data).unpack('H*').first}" if data
           if children.any?
             xml << "\n" if formatted
             children.each { |node| formatted ? xml << node.to_xml(formatted).lines.map { |l| "  #{l}" }.join << "\n" : xml << node.to_xml(formatted) }
