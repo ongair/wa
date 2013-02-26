@@ -1,3 +1,5 @@
+require 'cgi'
+
 module Whatsapp
   module Protocol
 
@@ -25,6 +27,30 @@ module Whatsapp
         end
 
         nil
+      end
+
+      def to_s
+        to_xml(false)
+      end
+
+      def to_xml(formatted = true)
+        xml = "<#{tag}"
+
+        attributes.each { |key, value| xml << " \"#{key}\"=\"#{value}\""}
+
+        if children.any? || data
+          xml << ">"
+          xml << "#{'\n  ' if formatted && children.any?}#{CGI::escapeHTML(data).lines.map { |l| "  #{l}" }}" if data
+          if children.any?
+            xml << "\n" if formatted
+            children.each { |node| formatted ? xml << node.to_xml(formatted).lines.map { |l| "  #{l}" }.join << "\n" : xml << node.to_xml(formatted) }
+          end
+          xml << "</#{tag}>"
+        else
+          xml << " />"
+        end
+
+        xml
       end
 
     end

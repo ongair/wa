@@ -7,7 +7,7 @@ module Whatsapp
 
   end
 
-  class AuthenticationError < Exception
+  class AuthenticationError < StandardError
   end
 
   class OperationTimeout < SocketError

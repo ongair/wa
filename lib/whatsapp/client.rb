@@ -1,6 +1,7 @@
 require 'whatsapp/protocol/connection'
 require 'whatsapp/protocol/composing_node'
 require 'whatsapp/protocol/presence_node'
+require 'whatsapp/protocol/status_message_node'
 
 module Whatsapp
 
@@ -52,6 +53,10 @@ module Whatsapp
 
     def send_presence(type = 'available')
       @connection.send_node(Protocol::PresenceNode.new(@name, type))
+    end
+
+    def send_status_message(status_message = '')
+      @connection.send_node(Protocol::StatusMessageNode.new(status_message))
     end
 
     def account_info
