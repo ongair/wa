@@ -1,6 +1,8 @@
 require 'whatsapp/protocol/connection'
 require 'whatsapp/protocol/composing_node'
 require 'whatsapp/protocol/presence_node'
+require 'whatsapp/protocol/profile_picture_node'
+require 'whatsapp/protocol/status_message_node'
 
 module WhatsApp
 
@@ -52,6 +54,16 @@ module WhatsApp
 
     def send_presence(type = 'available')
       @connection.send_node(Protocol::PresenceNode.new(@name, type))
+    end
+
+    def send_status_message(status_message = '')
+      @connection.send_node(Protocol::StatusMessageNode.new(status_message))
+    end
+
+    def send_profile_picture(image_data, preview_data, to = number)
+      mama = to.index('-') ? Protocol::Connection::WHATSAPP_GROUP_SERVER : Protocol::Connection::WHATSAPP_SERVER
+
+      @connection.send_node(Protocol::ProfilePictureNode.new("#{to}@#{mama}", image_data, preview_data))
     end
 
     def account_info
