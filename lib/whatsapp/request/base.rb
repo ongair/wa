@@ -26,7 +26,7 @@ module WhatsApp
           }
       }
 
-      attr_accessor :device, :type, :url, :headers, :params, :proxy, :response
+      attr_accessor :device, :type, :url, :headers, :params, :response
 
       def initialize
         self.device   = :android
@@ -71,18 +71,12 @@ module WhatsApp
         response.parsed_response
       end
 
-      def set_proxy(proxy)
-        self.proxy = proxy
-
-        self
-      end
-
       protected
 
       def request_options(options = {})
-        options.merge!(headers: headers)
+        options = options.merge(headers: headers)
 
-        request_options.merge!(
+        options.merge!(
             http_proxyaddr: proxy.host,
             http_proxyport: proxy.port,
             http_proxyuser: proxy.user,

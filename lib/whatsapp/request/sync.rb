@@ -8,6 +8,8 @@ module WhatsApp
     class Sync
       include WhatsApp::Request::Proxy
 
+      attr_accessor :response
+
       def initialize(username, password, contacts)
         @username     = username
         @password     = password
@@ -17,14 +19,19 @@ module WhatsApp
       end
 
       def perform
-        auth = @auth_request.set_proxy(proxy).perform
+        auth          = @auth_request.set_proxy(proxy).perform
+        self.response = @auth_request.response
 
         return auth unless auth['message'] == 'next token'
 
         authentication = @auth_request.response.headers['www-authenticate']
         nonce          = authentication.match(/nonce="([^"]+)/)[1]
 
-        Sync::Query.new(@username, @password, nonce, @contacts).set_proxy(proxy).perform
+        @query_request = Sync::Query.new(@username, @password, nonce, @contacts).set_proxy(proxy)
+        query_response = @query_request.perform
+        self.response  = @query_request.response
+
+        query_response
       end
     end
 
