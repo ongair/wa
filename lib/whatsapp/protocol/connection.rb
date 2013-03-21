@@ -19,20 +19,22 @@ module WhatsApp
       WHATSAPP_REALM        = 's.whatsapp.net'
       WHATSAPP_GROUP_SERVER = 'g.us'
       WHATSAPP_DIGEST       = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION      = '2.9.1547'
+      WHATSAPP_VERSION      = '2.9.3936'
       DEVICE                = 'Android'
       PORT                  = 5222
       OPERATION_TIMEOUT     = 2
       CONNECT_TIMEOUT       = 5
 
-      attr_reader :account_info
+      attr_reader :account_info, :input_key, :output_key
 
       def initialize(number, name, options = {})
         reset
 
-        @number = number
-        @name   = name
-        @proxy  = options[:proxy]
+        @number     = number
+        @name       = name
+        @proxy      = options[:proxy]
+        @input_key  = options[:input_keystream]
+        @output_key = options[:output_keystream]
       end
 
       def reset
@@ -87,7 +89,7 @@ module WhatsApp
       end
 
       def auth(password)
-        resource = "#{DEVICE}-#{WHATSAPP_VERSION}-#{PORT}"
+        resource = "#{DEVICE}-#{WHATSAPP_VERSION}"
         data     = @writer.start_stream(WHATSAPP_SERVER, resource)
 
         send_data(data)

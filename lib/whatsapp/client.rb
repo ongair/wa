@@ -70,6 +70,14 @@ module WhatsApp
       @connection.account_info
     end
 
+    def input_keystream
+      @connection.input_key
+    end
+
+    def output_keystream
+      @connection.output_key
+    end
+
   end
 
 end

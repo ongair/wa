@@ -19,7 +19,7 @@ module WhatsApp
 
         @id += 1
 
-        "#{prefix}#{now[0]}#{now[1][0, 3]}#{100 + rand(900)}#{@id}"
+        "#{prefix}#{now[0]}-#{@id}#{now[1][0, 3]}#{100 + rand(900)}"
       end
     end
 

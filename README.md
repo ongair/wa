@@ -29,8 +29,17 @@ TODO: Write usage instructions here
 3. Connect Desktop to Internet through Ethernet.
 4. Share your Ethernet connection using Wi-Fi.
 5. Connect your phone to the Internet using Desktop's shared Wi-Fi connection.
-6. Setup HTTP proxy in Phone connection's settings (set server to Desktop's Ethernet IP address and Port to 8080).
+   * If using OSX -> iOS connection, you must not set any password.
+   * If using OSX -> Android connection, you must set WEP/WPA password.
+6. Setup HTTP proxy in Phone connection's settings.
+   * In iOS, set Server to your Desktop's "bridge" interface IP (192.168.2.1 usually) and Port to 8080.
 7. Run mitmproxy.
+
+## How to decompile Android APK
+
+1. Download "WhatsApp Messenger.apk" using Real APK Leecher (Windows only).
+2. Unpack the apk using apktool.
+3. Use https://code.google.com/p/dex2jar/ to get classes.dex.
 
 ## Contributing
 

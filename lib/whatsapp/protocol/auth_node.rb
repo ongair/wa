@@ -7,9 +7,10 @@ module WhatsApp
 
       def initialize(number)
         super('auth', {
+            user:      number,
+            passive:   'true',
             xmlns:     'urn:ietf:params:xml:ns:xmpp-sasl',
-            mechanism: 'WAUTH-1',
-            user:      number
+            mechanism: 'WAUTH-1'
         })
       end
 
