@@ -48,8 +48,12 @@ TODO: Write usage instructions here
 
 apktool b src
 
-Sign + Align APK:
+Sign (+ Align) APK:
 http://developer.android.com/tools/publishing/app-signing.html
+
+OR:
+
+d2j-apk-sign.sh -f -o app-signed.apk app.apk
 
 Enable installation of APKs from unknown sources.
 
