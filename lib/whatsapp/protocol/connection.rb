@@ -19,7 +19,7 @@ module WhatsApp
       WHATSAPP_REALM        = 's.whatsapp.net'
       WHATSAPP_GROUP_SERVER = 'g.us'
       WHATSAPP_DIGEST       = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION      = '2.9.3936'
+      WHATSAPP_VERSION      = '2.9.5196'
       DEVICE                = 'Android'
       PORT                  = 5222
       OPERATION_TIMEOUT     = 2

@@ -28,18 +28,33 @@ TODO: Write usage instructions here
    * Install mitmproxy-ca-cert.pem on the Phone.
 3. Connect Desktop to Internet through Ethernet.
 4. Share your Ethernet connection using Wi-Fi.
+   * OSX: System preferences -> Sharing -> Internet Sharing -> Share Ethernet using Wi-Fi.
 5. Connect your phone to the Internet using Desktop's shared Wi-Fi connection.
    * If using OSX -> iOS connection, you must not set any password.
    * If using OSX -> Android connection, you must set WEP/WPA password.
 6. Setup HTTP proxy in Phone connection's settings.
    * In iOS, set Server to your Desktop's "bridge" interface IP (192.168.2.1 usually) and Port to 8080.
+   * In Android, your device must be rooted if it does not provide any system-wide Proxy settings.
 7. Run mitmproxy.
+   * If sniffing Android, remember to use --upstream-cert option ([Setting up SSL interception - Android](http://mitmproxy.org/doc/certinstall/android.html))
 
 ## How to decompile Android APK
 
 1. Download "WhatsApp Messenger.apk" using Real APK Leecher (Windows only).
 2. Unpack the apk using apktool.
 3. Use https://code.google.com/p/dex2jar/ to get classes.dex.
+
+## How to compile Android APK
+
+apktool b src
+
+Sign + Align APK:
+http://developer.android.com/tools/publishing/app-signing.html
+
+Enable installation of APKs from unknown sources.
+
+Install APK:
+adb install app.apk
 
 ## Contributing
 
