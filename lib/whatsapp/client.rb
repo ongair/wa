@@ -1,5 +1,6 @@
 require 'whatsapp/protocol/connection'
 require 'whatsapp/protocol/composing_node'
+require 'whatsapp/protocol/paused_node'
 require 'whatsapp/protocol/presence_node'
 require 'whatsapp/protocol/profile_picture_node'
 require 'whatsapp/protocol/status_message_node'
@@ -48,8 +49,14 @@ module WhatsApp
       @connection.send_node(Protocol::ComposingNode.new("#{to}@#{mama}"))
     end
 
+    def paused_message(to)
+      mama = to.index('-') ? Protocol::Connection::WHATSAPP_GROUP_SERVER : Protocol::Connection::WHATSAPP_SERVER
+
+      @connection.send_node(Protocol::PausedNode.new("#{to}@#{mama}"))
+    end
+
     def send_name
-      @connection.send_node(Protocol::PresenceNode.new(@name))
+      @connection.send_node(Protocol::PresenceNode.new(@name, nil))
     end
 
     def send_presence(type = 'available')
