@@ -19,7 +19,7 @@ module WhatsApp
       WHATSAPP_REALM        = 's.whatsapp.net'
       WHATSAPP_GROUP_SERVER = 'g.us'
       WHATSAPP_DIGEST       = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION      = '2.9.5196'
+      WHATSAPP_VERSION      = '2.9.1547'
       DEVICE                = 'Android'
       PORT                  = 5222
       OPERATION_TIMEOUT     = 2
@@ -89,7 +89,7 @@ module WhatsApp
       end
 
       def auth(password)
-        resource = "#{DEVICE}-#{WHATSAPP_VERSION}"
+        resource = "#{DEVICE}-#{WHATSAPP_VERSION}" # "-#{PORT}"
         data     = @writer.start_stream(WHATSAPP_SERVER, resource)
 
         send_data(data)
