@@ -14,12 +14,12 @@ module WhatsApp
   module Protocol
 
     class Connection
-      WHATSAPP_HOST         = 'c.whatsapp.net'
+      WHATSAPP_HOST         = 'c2.whatsapp.net'
       WHATSAPP_SERVER       = 's.whatsapp.net'
       WHATSAPP_REALM        = 's.whatsapp.net'
       WHATSAPP_GROUP_SERVER = 'g.us'
       WHATSAPP_DIGEST       = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION      = '2.9.1547'
+      WHATSAPP_VERSION      = '2.9.5196'
       DEVICE                = 'Android'
       PORT                  = 5222
       OPERATION_TIMEOUT     = 2
