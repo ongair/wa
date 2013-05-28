@@ -1,3 +1,5 @@
+require 'httparty'
+
 require 'whatsapp/request/proxy'
 
 module WhatsApp

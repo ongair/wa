@@ -1,5 +1,6 @@
 require 'whatsapp/protocol/connection'
 require 'whatsapp/protocol/composing_node'
+require 'whatsapp/protocol/image_message_node'
 require 'whatsapp/protocol/paused_node'
 require 'whatsapp/protocol/presence_node'
 require 'whatsapp/protocol/profile_picture_node'

@@ -1,3 +1,6 @@
+require 'httmultiparty'
+require 'securerandom'
+
 require 'whatsapp/request/base'
 
 module WhatsApp
@@ -9,14 +12,14 @@ module WhatsApp
         super()
 
         self.type   = :post
-        self.url    = 'https://mms.whatsapp.net/client/iphone/upload.php'
+        self.url    = "https://mms836.whatsapp.net/u/#{SecureRandom.urlsafe_base64(28)}/#{SecureRandom.urlsafe_base64(33)}"
         self.params = {file: file}
       end
 
       def post
-        self.response = HTTMultiParty.post(url, headers: headers, query: params)
+        self.response = HTTMultiParty.post(url, request_options(query: params))
 
-        Plist::parse_xml(response.body)
+        response.parsed_response
       end
 
     end
