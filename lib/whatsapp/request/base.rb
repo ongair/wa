@@ -35,7 +35,7 @@ module WhatsApp
         self.device   = :android
         self.type     = :get
         self.url      = ''
-        self.headers  = {'User-Agent' => user_agent}
+        self.headers  = {'User-Agent' => user_agent, 'Connection' => 'keep-alive', 'Proxy-Connection' => 'keep-alive'}
         self.params   = {}
         self.response = nil
         self.proxy    = nil

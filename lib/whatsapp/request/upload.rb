@@ -8,11 +8,11 @@ module WhatsApp
 
     class Upload < WhatsApp::Request::Base
 
-      def initialize(file)
+      def initialize(file, url)
         super()
 
         self.type   = :post
-        self.url    = "https://mms836.whatsapp.net/u/#{SecureRandom.urlsafe_base64(28)}/#{SecureRandom.urlsafe_base64(33)}"
+        self.url    = url
         self.params = {file: file}
       end
 

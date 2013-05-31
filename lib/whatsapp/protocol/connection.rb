@@ -8,13 +8,14 @@ require 'whatsapp/protocol/features_node'
 require 'whatsapp/protocol/auth_node'
 require 'whatsapp/protocol/auth_response_node'
 require 'whatsapp/protocol/keystream'
+require 'whatsapp/protocol/pong_node'
 require 'whatsapp/net/tcp_socket'
 
 module WhatsApp
   module Protocol
 
     class Connection
-      WHATSAPP_HOST         = 'c.whatsapp.net'
+      WHATSAPP_HOST         = 'c2.whatsapp.net'
       WHATSAPP_SERVER       = 's.whatsapp.net'
       WHATSAPP_REALM        = 's.whatsapp.net'
       WHATSAPP_GROUP_SERVER = 'g.us'
@@ -89,7 +90,7 @@ module WhatsApp
       end
 
       def auth(password)
-        resource = "#{DEVICE}-#{WHATSAPP_VERSION}" # "-#{PORT}"
+        resource = "#{DEVICE}-#{WHATSAPP_VERSION}-#{PORT}"
         data     = @writer.start_stream(WHATSAPP_SERVER, resource)
 
         send_data(data)
@@ -175,7 +176,7 @@ module WhatsApp
           end
 
           if node.tag == 'iq' && node.attribute('type') == 'get' && node.children && node.children.length > 0 && node.children[0].tag == 'ping'
-            pong(node.attribute('id'))
+            send_node(Protocol::PongNode.new(node.attribute('id')))
           end
 
           if node.tag == 'iq' && node.attribute('type') == 'result' && node.children && node.children.length > 0 && node.children[0].tag == 'query'

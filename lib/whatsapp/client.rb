@@ -1,6 +1,7 @@
 require 'whatsapp/protocol/connection'
 require 'whatsapp/protocol/composing_node'
 require 'whatsapp/protocol/image_message_node'
+require 'whatsapp/protocol/iq_media_node'
 require 'whatsapp/protocol/paused_node'
 require 'whatsapp/protocol/presence_node'
 require 'whatsapp/protocol/profile_picture_node'
@@ -42,6 +43,10 @@ module WhatsApp
       mama = message.to.index('-') ? Protocol::Connection::WHATSAPP_GROUP_SERVER : Protocol::Connection::WHATSAPP_SERVER
 
       @connection.send_node(message.set_to("#{message.to}@#{mama}"))
+    end
+
+    def send_node(node)
+      @connection.send_node(node)
     end
 
     def composing_message(to)
