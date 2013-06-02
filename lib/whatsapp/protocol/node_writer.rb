@@ -7,106 +7,112 @@ module WhatsApp
       DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
       DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
+      BINARY_ENCODING = Encoding.find('binary')
+      HEADER          = 'WA'.force_encoding(BINARY_ENCODING) << 0x01 << 0x02
+
       attr_accessor :key
 
-      attr_reader :output
-
       def initialize
-        @output = ''
+        @output = ''.force_encoding(BINARY_ENCODING)
       end
 
       def start_stream(domain, resource)
-        attributes = {'to' => domain, 'resource' => resource}
-        header     = "WA#{write_int8(1)}#{write_int8(2)}"
-        write_list_start(attributes.size * 2 + 1)
+        attributes = {to: domain, resource: resource}
 
-        @output << "\x01"
+        write_list_start(attributes.size * 2 + 1)
+        write_int8(0x01)
         write_attributes(attributes)
 
-        header + flush_buffer
+        HEADER + flush_buffer
       end
 
       def write(node)
-        if node.nil?
-          @output << "\x00"
-        else
+        if node
           write_internal(node)
+        else
+          write_int8(0x00)
         end
 
         flush_buffer
       end
 
+      private
+
+      def flush_buffer
+        data = key ? key.encode(@output) : @output
+        size = data.length
+
+        "#{(key ? (1 << 4) : 0).chr}#{((size & 0xff00) >> 8).chr}#{(size & 0x00ff).chr}#{data}"
+      ensure
+        @output.clear
+      end
+
       def write_internal(node)
-        len = 1
+        length = 1
 
-        len += node.attributes.size * 2 if node.attributes
-        len += 1 if node.children && node.children.size > 0
-        len += 1 if node.data && node.data.size > 0
+        length += node.attributes.size * 2 if node.attributes
+        length += 1 if node.children && node.children.size > 0
+        length += 1 if node.data && node.data.size > 0
 
-        write_list_start(len)
+        write_list_start(length)
         write_string(node.tag)
         write_attributes(node.attributes)
-
         write_bytes(node.data) if node.data && node.data.size > 0
+
         if node.children && node.children.size > 0
           write_list_start(node.children.size)
           node.children.each { |child| write_internal(child) }
         end
       end
 
-      def flush_buffer
-        data    = key ? key.encode(@output) : @output
-        size    = data.length
-        @output = ''
-
-        "#{write_int8(key ? (1 << 4) : 0)}#{write_int16(size)}#{data}"
-      end
-
       def write_token(token)
         if token < 0xf5
-          @output << token.chr
+          write_int8(token)
         elsif token <= 0x1f4
-          @output << "\xfe" << (token - 0xf5).chr
+          write_int8(0xfe)
+          write_int8(token - 0xf5)
         end
       end
 
       def write_jid(user, server)
-        @output << "\xfa"
+        write_int8(0xfa)
 
         if user && user.length > 0
           write_string(user)
         else
-          write_token(0)
+          write_token(0x00)
         end
 
         write_string(server)
       end
 
       def write_int8(value)
-        (value & 0xff).chr
+        @output << (value & 0xff)
       end
 
       def write_int16(value)
-        "#{((value & 0xff00) >> 8).chr}#{(value & 0x00ff).chr}"
+        @output << ((value & 0xff00) >> 8) << (value & 0x00ff)
       end
 
       def write_int24(value)
-        "#{((value & 0xff0000) >> 16).chr}#{((value & 0x00ff00) >> 8).chr}#{(value & 0x0000ff).chr}"
+        @output << ((value & 0xff0000) >> 16) << ((value & 0x00ff00) >> 8) << (value & 0x0000ff)
       end
 
       def write_bytes(bytes)
-        len = bytes.bytesize
+        length = bytes.bytesize
 
-        if len >= 0x100
-          @output << "\xfd" << write_int24(len)
+        if length <= 0xff
+          write_int8(0xfc)
+          write_int8(length)
         else
-          @output << "\xfc" << write_int8(len)
+          write_int8(0xfd)
+          write_int24(length)
         end
 
         if bytes.is_a?(String)
-          bytes.each_byte { |b| @output << b.chr }
-        else
-          @output << bytes
+          bytes.each_byte { |byte| write_int8(byte) }
+        elsif bytes.is_a?(Array)
+          bytes.each { |byte| write_int8(byte) }
         end
       end
 
@@ -134,11 +140,13 @@ module WhatsApp
 
       def write_list_start(length)
         if length == 0
-          @output << "\x00"
-        elsif length < 0x100
-          @output << "\xf8" << write_int8(length)
+          write_int8(0)
+        elsif length <= 0xff
+          write_int8(0xf8)
+          write_int8(length)
         else
-          @output << "\xf9" << write_int16(length)
+          write_int8(0xf9)
+          write_int16(length)
         end
       end
 
