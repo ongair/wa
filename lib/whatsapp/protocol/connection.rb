@@ -113,6 +113,8 @@ module WhatsApp
       end
 
       def send_node(node)
+        #puts "<- #{node.inspect}"
+
         send_data(@writer.write(node))
       end
 
@@ -154,6 +156,8 @@ module WhatsApp
         node = @reader.next_tree(data)
 
         while node
+          #puts "-> #{node.inspect}"
+
           if node.tag == 'challenge'
             process_challenge(node)
           elsif node.tag == 'success'
@@ -179,7 +183,7 @@ module WhatsApp
             send_node(Protocol::PongNode.new(node.attribute('id')))
           end
 
-          if node.tag == 'iq' && node.attribute('type') == 'result' && node.children && node.children.length > 0 && node.children[0].tag == 'query'
+          if node.tag == 'iq' && node.attribute('type') == 'result' && node.children && node.children.length > 0 && ['query', 'duplicate', 'media'].include?(node.children[0].tag)
             @message_queue << node
           end
 

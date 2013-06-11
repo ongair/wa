@@ -20,6 +20,17 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+## WhatsApp protocol
+
+### `missing_password_record` and `not-authorized` errors
+
+If the account is successfully validated and granted new password, but there is AuthenticationError when trying
+to use it to synchronize the contacts list or deliver a message, most probably there is a typo in account number
+(ie. in `(40) 0123456789` there is unnecessary 0 between country code and the number).
+
+WhatsApp can properly register incorrect numbers and sanitize them. The sanitized and correct number is returned
+in `login` field of `exist` API call.
+
 ## How to sniff HTTPS requests
 
 1. Install [mitmproxy](http://mitmproxy.org/).
