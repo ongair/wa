@@ -113,7 +113,7 @@ module WhatsApp
       end
 
       def send_node(node)
-        #puts "<- #{node.inspect}"
+        #puts "\e[30m<- #{node}\e[0m"
 
         send_data(@writer.write(node))
       end
@@ -156,7 +156,7 @@ module WhatsApp
         node = @reader.next_tree(data)
 
         while node
-          #puts "-> #{node.inspect}"
+          #puts "\e[32m-> #{node}\e[0m"
 
           if node.tag == 'challenge'
             process_challenge(node)
