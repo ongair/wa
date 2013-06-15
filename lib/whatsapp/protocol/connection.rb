@@ -31,11 +31,13 @@ module WhatsApp
       def initialize(number, name, options = {})
         reset
 
-        @number     = number
-        @name       = name
-        @proxy      = options[:proxy]
-        @input_key  = options[:input_keystream]
-        @output_key = options[:output_keystream]
+        @number       = number
+        @name         = name
+        @passive      = options[:passive]
+        @proxy        = options[:proxy]
+        @input_key    = options[:input_keystream]
+        @output_key   = options[:output_keystream]
+        @debug_output = options[:debug_output]
       end
 
       def reset
@@ -95,7 +97,7 @@ module WhatsApp
 
         send_data(data)
         send_node(FeaturesNode.new)
-        send_node(AuthNode.new(@number))
+        send_node(AuthNode.new(@number, @passive))
 
         process_inbound_data(read_data)
         send_node(AuthResponseNode.new(auth_response(password)))
@@ -113,7 +115,7 @@ module WhatsApp
       end
 
       def send_node(node)
-        #puts "\e[30m<- #{node}\e[0m"
+        debug("\e[30m<- #{node}\e[0m")
 
         send_data(@writer.write(node))
       end
@@ -145,7 +147,7 @@ module WhatsApp
                 'to'   => msg.attribute('from'),
                 'type' => 'chat',
                 'id'   => msg.attribute('id')
-            },                                      [received_node])
+            },                                           [received_node])
 
             send_node(message_node)
           end
@@ -156,7 +158,7 @@ module WhatsApp
         node = @reader.next_tree(data)
 
         while node
-          #puts "\e[32m-> #{node}\e[0m"
+          debug("\e[32m-> #{node}\e[0m")
 
           if node.tag == 'challenge'
             process_challenge(node)
@@ -194,6 +196,10 @@ module WhatsApp
       end
 
       private
+
+      def debug(text)
+        @debug_output.puts(text) if @debug_output
+      end
 
       if defined?(Encoding)
         BINARY_ENCODING = Encoding.find('binary')
