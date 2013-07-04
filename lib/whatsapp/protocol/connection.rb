@@ -59,8 +59,10 @@ module WhatsApp
         @socket = WhatsApp::Net::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT, @proxy)
       end
 
-      def poll_messages
-        process_inbound_data(read_data)
+      def poll_messages(until_empty = false)
+        begin
+          process_inbound_data(read_data)
+        end while until_empty && @incomplete_message.length > 0
       end
 
       def get_messages

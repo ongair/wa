@@ -31,8 +31,8 @@ module WhatsApp
       @connection.auth(password)
     end
 
-    def poll_messages
-      @connection.poll_messages
+    def poll_messages(until_empty = false)
+      @connection.poll_messages(until_empty)
     end
 
     def get_messages
