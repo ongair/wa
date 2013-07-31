@@ -8,9 +8,8 @@ module WhatsApp
       def initialize
         super('stream:features', {}, [
             Node.new('receipt_acks'),
-            # Node.new('w:profile:picture', {type: 'all'}),
-            # Node.new('notification', {type: 'participant'}),
-            # Node.new('status')
+            Node.new('w:profile:picture', {type: 'all'}),
+            Node.new('status', {notification: 'true'})
         ])
       end
 
