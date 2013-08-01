@@ -133,11 +133,11 @@ module WhatsApp
 
           retries = 0
           poll_messages(:until_empty) while ((retries += 1) < 10) && (@login_status != :connected)
-
-          @writer.keystream = @output_keystream
         end
 
         if @login_status == :connected
+          @writer.keystream = @output_keystream
+
           session.next_challenge = @next_challenge
           session.authed_at      = @authed_at
 
