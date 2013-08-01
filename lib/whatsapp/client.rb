@@ -27,8 +27,8 @@ module WhatsApp
       @connection.close
     end
 
-    def auth(password)
-      @connection.auth(password)
+    def auth(password, challenge = nil)
+      @connection.auth(password, challenge)
     end
 
     def poll_messages(until_empty = false)
@@ -83,12 +83,8 @@ module WhatsApp
       @connection.account_info
     end
 
-    def next_challenge
-      @connection.next_challenge
-    end
-
-    def new_connection?
-      @connection.new_connection?
+    def session
+      @connection.session
     end
 
   end

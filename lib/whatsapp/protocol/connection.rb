@@ -26,17 +26,19 @@ module WhatsApp
       OPERATION_TIMEOUT     = 2
       CONNECT_TIMEOUT       = 5
 
-      attr_reader :account_info, :next_challenge
+      BINARY_ENCODING = Encoding.find('binary')
 
-      def initialize(number, name, options = {})
+      attr_reader :account_info, :session
+
+      def initialize(number, name, passive: false, proxy: nil, debug_output: nil)
         reset
 
-        @number       = number
-        @name         = name
-        @passive      = options[:passive]
-        @proxy        = options[:proxy]
-        @debug_output = options[:debug_output]
-        @challenge    = options[:challenge]
+        @number = number
+        @name   = name
+
+        @passive      = passive
+        @proxy        = proxy
+        @debug_output = debug_output
       end
 
       def reset
@@ -46,7 +48,8 @@ module WhatsApp
 
         @challenge      = nil
         @next_challenge = nil
-        @new_connection = true
+        @authed_at      = nil
+        @session        = nil
 
         @message_queue = []
 
@@ -60,10 +63,6 @@ module WhatsApp
 
       def connect
         @socket = WhatsApp::Net::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT, @proxy)
-      end
-
-      def new_connection?
-        @new_connection
       end
 
       def poll_messages(until_empty = false)
@@ -100,36 +99,56 @@ module WhatsApp
         @socket.write(data)
       end
 
-      def auth(password)
+      def auth(password, challenge = nil)
+        @challenge = nil
+        session    = Session.new
+
         resource = "#{DEVICE}-#{WHATSAPP_VERSION}"
         data     = @writer.start_stream(WHATSAPP_SERVER, resource)
 
         send_data(data)
         send_node(FeaturesNode.new)
 
-        if @challenge
-          @new_connection = false
+        if challenge
+          session.type = :restored
 
-          send_node(AuthNode.new(@number, auth_response(password), @passive))
+          auth_data = setup_authentication(password, challenge)
+          send_node(AuthNode.new(@number, auth_data, @passive))
+
           @reader.keystream = @input_keystream
-          @writer.keystream = @output_keystream
-          poll_messages(:until_empty)
-        end
-
-        unless @login_status == :connected
-          @new_connection = true
-
+        else
           send_node(AuthNode.new(@number, nil, @passive))
-          poll_messages(:until_empty)
-          send_node(AuthResponseNode.new(auth_response(password)))
-          @reader.keystream = @input_keystream
-          @writer.keystream = @output_keystream
         end
 
         retries = 0
-        poll_messages(:until_empty) while ((retries += 1) < 10) && (@login_status != :connected)
+        poll_messages(:until_empty) while ((retries += 1) < 10) && (@login_status != :connected) && !@challenge
 
-        @login_status == :connected ? (@new_connection ? :new_connection : :restore_connection) : nil
+        if @login_status != :connected && @challenge
+          session.type = :new
+
+          auth_data = setup_authentication(password, @challenge)
+          send_node(AuthResponseNode.new(auth_data))
+
+          @reader.keystream = @input_keystream
+
+          retries = 0
+          poll_messages(:until_empty) while ((retries += 1) < 10) && (@login_status != :connected)
+
+          @writer.keystream = @output_keystream
+        end
+
+        if @login_status == :connected
+          session.next_challenge = @next_challenge
+          session.authed_at      = @authed_at
+
+          @next_challenge = nil
+          @challenge      = nil
+          @authed_at      = nil
+        else
+          session = nil
+        end
+
+        session
       end
 
       def close
@@ -146,15 +165,15 @@ module WhatsApp
 
       protected
 
-      def auth_response(password)
+      def setup_authentication(password, challenge)
         raw_password = Base64.decode64(password)
 
-        key = PBKDF2.new(hash_function: :sha1, password: raw_password, salt: @challenge, iterations: 16, key_length: 20).bin_string
+        key = PBKDF2.new(hash_function: :sha1, password: raw_password, salt: challenge, iterations: 16, key_length: 20).bin_string
 
         @input_keystream  = WhatsApp::Protocol::Keystream.new(key)
         @output_keystream = WhatsApp::Protocol::Keystream.new(key)
 
-        @output_keystream.encode("#{@number}#{@challenge}#{Time.now.to_i}", false)
+        @output_keystream.encode("#{@number}#{challenge}#{Time.now.to_i}", false)
       end
 
       def send_message_received(msg)
@@ -163,7 +182,7 @@ module WhatsApp
             received_node = WhatsApp::Protocol::Node.new('received', {xmlns: 'urn:xmpp:receipts'})
             message_node  = WhatsApp::Protocol::Node.new('message', {
                 to:   msg.attribute('from'),
-                type: 'chat',
+                type: msg.attribute('type'),
                 id:   msg.attribute('id')
             }, [received_node])
 
@@ -185,6 +204,8 @@ module WhatsApp
             @login_status   = :connected
             @challenge      = nil
             @next_challenge = node.data
+            @authed_at      = Time.at(node.attribute('t').to_i)
+
             @account_info   = {
                 status:     node.attribute('status'),
                 kind:       node.attribute('kind'),
@@ -215,6 +236,9 @@ module WhatsApp
         end
       rescue IncompleteMessageException => e
         @incomplete_message = e.input
+      end
+
+      class Session < Struct.new(:type, :authed_at, :next_challenge)
       end
 
       private
