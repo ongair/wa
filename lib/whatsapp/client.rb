@@ -83,12 +83,12 @@ module WhatsApp
       @connection.account_info
     end
 
-    def input_keystream
-      @connection.input_key
+    def next_challenge
+      @connection.next_challenge
     end
 
-    def output_keystream
-      @connection.output_key
+    def new_connection?
+      @connection.new_connection?
     end
 
   end

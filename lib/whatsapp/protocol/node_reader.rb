@@ -9,7 +9,7 @@ module WhatsApp
       DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
       DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
-      attr_accessor :key, :input
+      attr_accessor :keystream, :input
 
       def initialize
         @input = ''
@@ -31,9 +31,9 @@ module WhatsApp
         read_int24
 
         if stanza_flag & 8 == 8
-          if @key
+          if @keystream
             remaining_data = @input[stanza_size..-1]
-            @input         = "#{@key.decode(@input[0, stanza_size])}#{remaining_data}"
+            @input         = "#{@keystream.decode(@input[0, stanza_size])}#{remaining_data}"
           else
             raise 'No key for encrypted data'
           end

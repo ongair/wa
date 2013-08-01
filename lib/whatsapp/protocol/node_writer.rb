@@ -8,9 +8,11 @@ module WhatsApp
       DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
       BINARY_ENCODING = Encoding.find('binary')
-      HEADER          = 'WA'.force_encoding(BINARY_ENCODING) << 0x01 << 0x02
+      HEADER          = "WA\x01\x02".force_encoding(BINARY_ENCODING)
 
-      attr_accessor :key
+      attr_accessor :keystream
+
+      attr_reader :output
 
       def initialize
         @output = ''.force_encoding(BINARY_ENCODING)
@@ -39,10 +41,10 @@ module WhatsApp
       private
 
       def flush_buffer
-        data = key ? key.encode(@output) : @output
+        data = keystream ? keystream.encode(@output) : @output
         size = data.length
 
-        "#{(key ? (1 << 4) : 0).chr}#{((size & 0xff00) >> 8).chr}#{(size & 0x00ff).chr}#{data}"
+        "#{(keystream ? 16 : 0).chr}#{((size & 0xff00) >> 8).chr}#{(size & 0x00ff).chr}#{data}"
       ensure
         @output.clear
       end
