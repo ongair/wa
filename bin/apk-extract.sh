@@ -63,6 +63,7 @@ command "$APKTOOL" decode --force "$APK" "$DST"
 echo && echo "== Extracting DEX from APK file ==============================================="
 command unzip "$APK" classes.dex -d "$DST"
 command md5 "$DST/classes.dex"
+command md5 -q "$DST/classes.dex" > "$DST/classes.dex.md5"
 
 echo && echo "== Converting DEX classes to JAR =============================================="
 command "$DEX2JAR" --topological-sort --output "$DST/$APK_BASENAME.jar" "$APK"
