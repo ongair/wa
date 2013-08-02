@@ -21,7 +21,7 @@ module WhatsApp
             mcc:    options[:mcc].to_s.rjust(3, ?0),
             method: method,
             reason: options[:reason] || '',
-            token:  token(number.to_s)
+            token:  generate_token(number.to_s)
         }
       end
 
