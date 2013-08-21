@@ -104,7 +104,7 @@ module WhatsApp
     private
 
     def send_message_node(to, node, *features)
-      send_node(Protocol::MessageNode.new(jid(to), message_feature_nodes(features) << node, Util::IdGenerator.next))
+      send_node(Protocol::MessageNode.new(jid(to), message_feature_nodes(*features) << node, Util::IdGenerator.next))
     end
 
     def send_node(node)

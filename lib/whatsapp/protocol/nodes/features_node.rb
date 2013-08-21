@@ -6,7 +6,7 @@ module WhatsApp
     class FeaturesNode < Node
 
       def initialize(*features)
-        super('stream:features', nil, stream_feature_nodes(features))
+        super('stream:features', nil, stream_feature_nodes(*features))
       end
 
       private
