@@ -23,7 +23,7 @@ module WhatsApp
         stanza_flag = (peek_int8 & 0xf0) >> 4
         stanza_size = peek_int16(1)
 
-        if @input && stanza_size > @input.bytesize - 3
+        if @input && (@input.bytesize < 3 || stanza_size > @input.bytesize)
           error       = IncompleteMessageException.new
           error.input = @input
 
