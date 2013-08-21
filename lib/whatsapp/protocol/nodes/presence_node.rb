@@ -5,8 +5,10 @@ module WhatsApp
 
     class PresenceNode < Node
 
-      def initialize(name, type = 'available')
-        attributes = type ? {type: type, name: name} : {name: name}
+      def initialize(name, type = nil)
+        attributes = {name: name}
+
+        attributes[:type] = type if type
 
         super('presence', attributes)
       end

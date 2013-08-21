@@ -1,6 +1,5 @@
 require 'whatsapp/client'
 require 'whatsapp/errors'
-require 'whatsapp/message'
 require 'whatsapp/request/code'
 require 'whatsapp/request/exist'
 require 'whatsapp/request/register'

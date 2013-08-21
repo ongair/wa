@@ -1,41 +1,50 @@
 require 'base64'
 require 'pbkdf2'
 
+require 'whatsapp/net/tcp_socket'
+require 'whatsapp/protocol/keystream'
 require 'whatsapp/protocol/node_writer'
 require 'whatsapp/protocol/node_reader'
-require 'whatsapp/protocol/node'
-require 'whatsapp/protocol/features_node'
-require 'whatsapp/protocol/auth_node'
-require 'whatsapp/protocol/auth_response_node'
-require 'whatsapp/protocol/keystream'
-require 'whatsapp/protocol/pong_node'
-require 'whatsapp/net/tcp_socket'
+require 'whatsapp/protocol/nodes/auth_node'
+require 'whatsapp/protocol/nodes/auth_response_node'
+require 'whatsapp/protocol/nodes/features_node'
+require 'whatsapp/protocol/nodes/message_received_node'
+require 'whatsapp/protocol/nodes/result_iq_node'
 
 module WhatsApp
   module Protocol
 
     class Connection
-      WHATSAPP_HOST         = 'c.whatsapp.net'
-      WHATSAPP_SERVER       = 's.whatsapp.net'
-      WHATSAPP_REALM        = 's.whatsapp.net'
-      WHATSAPP_GROUP_SERVER = 'g.us'
-      WHATSAPP_DIGEST       = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION      = '2.10.768'
-      DEVICE                = 'Android'
-      PORT                  = 5222
-      OPERATION_TIMEOUT     = 2
-      CONNECT_TIMEOUT       = 5
+      WHATSAPP_HOST          = 'c.whatsapp.net'
+      WHATSAPP_SERVER        = 's.whatsapp.net'
+      WHATSAPP_REALM         = 's.whatsapp.net'
+      WHATSAPP_GROUP_SERVER  = 'g.us'
+      WHATSAPP_STATUS_SERVER = 's.us'
+      WHATSAPP_DIGEST        = 'xmpp/s.whatsapp.net'
+      WHATSAPP_VERSION       = '2.10.768'
+      DEVICE                 = 'Android'
+      PORT                   = 5222
+      OPERATION_TIMEOUT      = 2
+      CONNECT_TIMEOUT        = 5
 
       BINARY_ENCODING = Encoding.find('binary')
 
       attr_reader :account_info, :session
 
-      def initialize(number, name, passive: false, proxy: nil, debug_output: nil)
+      def self.jid(number)
+        if number.index('@') || number.index('.')
+          number
+        else
+          server = number.index('-') ? WHATSAPP_GROUP_SERVER : WHATSAPP_SERVER
+
+          "#{number}@#{server}"
+        end
+      end
+
+      def initialize(number, passive: false, proxy: nil, debug_output: nil)
         reset
 
-        @number = number
-        @name   = name
-
+        @number       = number
         @passive      = passive
         @proxy        = proxy
         @debug_output = debug_output
@@ -107,7 +116,7 @@ module WhatsApp
         data     = @writer.start_stream(WHATSAPP_SERVER, resource)
 
         send_data(data)
-        send_node(FeaturesNode.new)
+        send_node(FeaturesNode.new(:receipts, :profile_pictures, :status_notification))
 
         if challenge
           session.type = :restored
@@ -176,18 +185,9 @@ module WhatsApp
         @output_keystream.encode("#{@number}#{challenge}#{Time.now.to_i}", false)
       end
 
-      def send_message_received(msg)
-        if msg.attribute('type') == 'chat' && (request_node = msg.child('request'))
-          if request_node.attribute('xmlns') == 'urn:xmpp:receipts'
-            received_node = WhatsApp::Protocol::Node.new('received', {xmlns: 'urn:xmpp:receipts'})
-            message_node  = WhatsApp::Protocol::Node.new('message', {
-                to:   msg.attribute('from'),
-                type: msg.attribute('type'),
-                id:   msg.attribute('id')
-            }, [received_node])
-
-            send_node(message_node)
-          end
+      def send_message_received(message)
+        if message.attribute('type') == 'chat' && (request_node = message.child('request')) && (received_node = message.child('received'))
+          send_node(WhatsApp::Protocol::MessageReceivedNode.new(message)) if request_node.attribute('xmlns') == 'urn:xmpp:receipts'
         end
       end
 
@@ -225,7 +225,7 @@ module WhatsApp
           end
 
           if node.tag == 'iq' && node.attribute('type') == 'get' && node.children && node.children.length > 0 && node.children[0].tag == 'ping'
-            send_node(Protocol::PongNode.new(node.attribute('id')))
+            send_node(ResultIqNode.new(node.attribute('id'), to: WHATSAPP_SERVER))
           end
 
           if node.tag == 'iq' && node.attribute('type') == 'result' && node.children && node.children.length > 0 && ['query', 'duplicate', 'media'].include?(node.children[0].tag)

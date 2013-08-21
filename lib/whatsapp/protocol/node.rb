@@ -2,17 +2,20 @@ module WhatsApp
   module Protocol
 
     class Node
+      EMPTY_ATTRIBUTES = {}.freeze
+      EMPTY_CHILDREN   = [].freeze
+
       attr_accessor :tag, :attributes, :children, :data
 
       def initialize(tag, attributes = nil, children = nil, data = nil)
         @tag        = tag
-        @attributes = attributes || {}
-        @children   = children || []
+        @attributes = attributes || EMPTY_ATTRIBUTES
+        @children   = children || EMPTY_CHILDREN
         @data       = data
       end
 
       def attribute(name)
-        attributes.has_key?(name) ? attributes[name] : nil
+        attributes[name]
       end
 
       def child(tag)
@@ -39,9 +42,17 @@ module WhatsApp
         if children.any? || data
           xml << ">"
           xml << "#{'\n  ' if formatted && children.any?}#{data.inspect}" if data
+
           if children.any?
             xml << "\n" if formatted
-            children.each { |node| formatted ? xml << node.to_xml(formatted).lines.map { |l| "  #{l}" }.join << "\n" : xml << node.to_xml(formatted) }
+
+            children.each do |node|
+              if formatted
+                xml << node.to_xml(formatted).lines.map { |l| "  #{l}" }.join << "\n"
+              else
+                xml << node.to_xml(formatted)
+              end
+            end
           end
           xml << "</#{tag}>"
         else
