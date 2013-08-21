@@ -77,7 +77,7 @@ module WhatsApp
       def poll_messages(until_empty = false)
         begin
           process_inbound_data(read_data)
-        end while until_empty && @incomplete_message.length > 0
+        end while until_empty && @incomplete_message.bytesize > 0
       end
 
       def get_messages
@@ -96,7 +96,7 @@ module WhatsApp
         rescue OperationTimeout
         end
 
-        if buffer && buffer.length > 0
+        if buffer && buffer.bytesize > 0
           buffer              = "#{@incomplete_message}#{buffer}"
           @incomplete_message = ''.force_encoding(BINARY_ENCODING)
         end
@@ -186,7 +186,7 @@ module WhatsApp
       end
 
       def send_message_received(message)
-        if message.attribute('type') == 'chat' && (request_node = message.child('request')) && (received_node = message.child('received'))
+        if message.attribute('type') == 'chat' && (request_node = message.child('request'))
           send_node(WhatsApp::Protocol::MessageReceivedNode.new(message)) if request_node.attribute('xmlns') == 'urn:xmpp:receipts'
         end
       end

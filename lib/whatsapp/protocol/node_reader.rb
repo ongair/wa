@@ -9,31 +9,33 @@ module WhatsApp
       DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
       DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
+      BINARY_ENCODING = Encoding.find('binary')
+
       attr_accessor :keystream, :input
 
       def initialize
-        @input = ''
+        @input = ''.force_encoding(BINARY_ENCODING)
       end
 
       def next_tree(input = nil)
-        @input = input if input
+        @input = input.force_encoding(BINARY_ENCODING) if input
 
         stanza_flag = (peek_int8 & 0xf0) >> 4
         stanza_size = peek_int16(1)
 
-        if @input && stanza_size > @input.length
-          e       = IncompleteMessageException.new('Incomplete message')
-          e.input = @input
+        if @input && stanza_size > @input.bytesize
+          error       = IncompleteMessageException.new
+          error.input = @input
 
-          raise e
+          raise error
         end
 
         read_int24
 
         if stanza_flag & 8 == 8
           if @keystream
-            remaining_data = @input[stanza_size..-1]
-            @input         = "#{@keystream.decode(@input[0, stanza_size])}#{remaining_data}"
+            remaining_data = @input.byteslice(stanza_size..-1)
+            @input         = "#{@keystream.decode(@input.byteslice(0, stanza_size))}#{remaining_data}"
           else
             raise 'No key for encrypted data'
           end
@@ -48,19 +50,17 @@ module WhatsApp
         if (token >= 0) && (token < DICTIONARY.size)
           DICTIONARY[token]
         else
-          raise Exception.new("BinTreeNodeReader->getToken: Invalid token #{token}")
+          raise "Invalid token #{token}"
         end
       end
 
       def read_string(token)
-        res = ''
+        res = nil
 
-        raise Exception.new("BinTreeNodeReader->readString: Invalid token #{token}") if token == -1
+        raise "Invalid token #{token}" if token < 0
 
         if (token > 4) && (token < 0xf5)
           res = get_token(token)
-        elsif token == 0
-          res = ''
         elsif token == 0xfc
           size = read_int8
           res  = fill_array(size)
@@ -105,7 +105,7 @@ module WhatsApp
         if token == 1
           attributes = read_attributes(size)
 
-          return Protocol::Node.new('start', attributes)
+          return Node.new('start', attributes)
         elsif token == 2
           return nil
         end
@@ -113,13 +113,13 @@ module WhatsApp
         tag        = read_string(token)
         attributes = read_attributes(size)
 
-        return Protocol::Node.new(tag, attributes) if (size % 2) == 1
+        return Node.new(tag, attributes) if (size % 2) == 1
 
         token = read_int8
 
-        return Protocol::Node.new(tag, attributes, read_list(token)) if is_list_tag(token)
+        return Node.new(tag, attributes, read_list(token)) if is_list_tag(token)
 
-        Protocol::Node.new(tag, attributes, [], read_string(token))
+        Node.new(tag, attributes, nil, read_string(token))
       end
 
       def is_list_tag(token)
@@ -130,25 +130,19 @@ module WhatsApp
         size = read_list_size(token)
 
         res = []
-
-        size.times do |i|
-          res << next_tree_internal
-        end
-
+        size.times { res << next_tree_internal }
         res
       end
 
       def read_list_size(token)
         size = 0
 
-        if token == 0
-          size = 0
-        elsif token == 0xf8
+        if token == 0xf8
           size = read_int8
         elsif token == 0xf9
           size = read_int16
         else
-          raise Exception.new("BinTreeNodeReader->readListSize: Invalid token #{token}")
+          raise "Invalid token #{token}"
         end
 
         size
@@ -157,10 +151,10 @@ module WhatsApp
       def peek_int24(offset = 0)
         res = 0
 
-        if @input && @input.length >= 3 + offset
-          res = @input[offset].ord << 16
-          res |= @input[offset + 1].ord << 8
-          res |= @input[offset + 2].ord << 0
+        if @input && @input.bytesize >= 3 + offset
+          res = @input.getbyte(offset) << 16
+          res |= @input.getbyte(offset + 1) << 8
+          res |= @input.getbyte(offset + 2) << 0
         end
 
         res
@@ -169,7 +163,7 @@ module WhatsApp
       def read_int24
         res = peek_int24
 
-        @input = @input[3..-1] if res && @input && @input.length >= 3
+        @input = @input.byteslice(3..-1) if res && @input && @input.bytesize >= 3
 
         res
       end
@@ -177,9 +171,9 @@ module WhatsApp
       def peek_int16(offset = 0)
         res = 0
 
-        if @input && @input.length >= 2 + offset
-          res = @input[offset].ord << 8
-          res |= @input[offset + 1].ord << 0
+        if @input && @input.bytesize >= 2 + offset
+          res = @input.getbyte(offset) << 8
+          res |= @input.getbyte(offset + 1) << 0
         end
 
         res
@@ -188,29 +182,29 @@ module WhatsApp
       def read_int16
         res = peek_int16
 
-        @input = @input[2..-1] if res && @input && @input.length >= 2
+        @input = @input.byteslice(2..-1) if res && @input && @input.bytesize >= 2
 
         res
       end
 
       def peek_int8(offset = 0)
-        @input && @input.length >= 1 + offset ? @input[offset].ord : 0
+        @input && @input.bytesize >= 1 + offset ? @input.getbyte(offset) : 0
       end
 
       def read_int8
         res = peek_int8
 
-        @input = @input[1..-1] if res && @input && @input.length >= 1
+        @input = @input.byteslice(1..-1) if res && @input && @input.bytesize >= 1
 
         res
       end
 
       def fill_array(len)
-        res = ''
+        res = ''.force_encoding(BINARY_ENCODING)
 
-        if @input && @input.length >= len
-          res    = @input[0, len]
-          @input = @input[len..-1]
+        if @input && @input.bytesize >= len
+          res    = @input.byteslice(0, len)
+          @input = @input.byteslice(len..-1)
         end
 
         res
