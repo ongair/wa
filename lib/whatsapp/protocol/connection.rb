@@ -97,7 +97,7 @@ module WhatsApp
         end
 
         if buffer && buffer.bytesize > 0
-          buffer              = "#{@incomplete_message}#{buffer}"
+          buffer              = @incomplete_message << buffer
           @incomplete_message = ''.force_encoding(BINARY_ENCODING)
         end
 

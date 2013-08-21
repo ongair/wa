@@ -23,7 +23,7 @@ module WhatsApp
         stanza_flag = (peek_int8 & 0xf0) >> 4
         stanza_size = peek_int16(1)
 
-        if @input && stanza_size > @input.bytesize
+        if @input && stanza_size > @input.bytesize - 2
           error       = IncompleteMessageException.new
           error.input = @input
 
@@ -57,7 +57,7 @@ module WhatsApp
       def read_string(token)
         res = nil
 
-        raise "Invalid token #{token}" if token < 0
+        raise "Invalid token #{token}" if token == -1
 
         if (token > 4) && (token < 0xf5)
           res = get_token(token)
