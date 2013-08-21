@@ -32,10 +32,10 @@ module WhatsApp
 
         read_int24
 
-        if stanza_flag & 8 == 8
+        if (stanza_flag & 8) != 0
           if @keystream
             remaining_data = @input.byteslice(stanza_size..-1)
-            @input         = "#{@keystream.decode(@input.byteslice(0, stanza_size))}#{remaining_data}"
+            @input         = "#{@keystream.decode(@input.byteslice(0, stanza_size))}#{remaining_data}".force_encoding(BINARY_ENCODING)
           else
             raise 'No key for encrypted data'
           end
