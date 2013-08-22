@@ -6,8 +6,8 @@ module WhatsApp
   module Protocol
 
     class NodeReader
-      #DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
-      #DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
+      DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
+      DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
       BINARY_ENCODING = Encoding.find('binary')
 
