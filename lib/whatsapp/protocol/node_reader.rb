@@ -6,29 +6,39 @@ module WhatsApp
   module Protocol
 
     class NodeReader
-      DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
-      DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
+      #DICTIONARY_PATH = File.join(File.dirname(__FILE__), 'dictionary.yml')
+      #DICTIONARY      = YAML.load_file(DICTIONARY_PATH)
 
       BINARY_ENCODING = Encoding.find('binary')
+
+      STANZA_HEADER_SIZE = 0x03
+      EMPTY_LIST         = 0x00
+      SHORT_LIST         = 0xf8
+      LONG_LIST          = 0xf9
+      JID_PAIR           = 0xfa
+      SHORT_STRING       = 0xfc
+      LONG_STRING        = 0xfd
+      LONG_TOKEN         = 0xfe
 
       attr_accessor :keystream, :input
 
       def initialize
-        @input = ''.force_encoding(BINARY_ENCODING)
+        @input     = ''.force_encoding(BINARY_ENCODING)
+        @old_input = @input.dup.freeze
       end
 
       def next_tree(input = nil)
-        @input = input.force_encoding(BINARY_ENCODING) if input
+        @input     = input.force_encoding(BINARY_ENCODING) if input
+        @old_input = @input.dup.freeze
+
+        return if @input.nil? || @input.bytesize == 0
+
+        read_more! if @input.bytesize < STANZA_HEADER_SIZE
 
         stanza_flag = (peek_int8 & 0xf0) >> 4
         stanza_size = peek_int16(1)
 
-        if @input && (@input.bytesize < 3 || stanza_size > @input.bytesize)
-          error       = IncompleteMessageException.new
-          error.input = @input
-
-          raise error
-        end
+        read_more! if @input.bytesize < stanza_size
 
         read_int24
 
@@ -46,6 +56,13 @@ module WhatsApp
 
       protected
 
+      def read_more!
+        error       = IncompleteMessageException.new
+        error.input = @old_input.dup
+
+        raise error
+      end
+
       def get_token(token)
         if (token >= 0) && (token < DICTIONARY.size)
           DICTIONARY[token]
@@ -55,33 +72,31 @@ module WhatsApp
       end
 
       def read_string(token)
-        res = nil
-
-        raise "Invalid token #{token}" if token == -1
-
-        if (token > 4) && (token < 0xf5)
-          res = get_token(token)
-        elsif token == 0xfc
-          size = read_int8
-          res  = fill_array(size)
-        elsif token == 0xfd
-          size = read_int24
-          res  = fill_array(size)
-        elsif token == 0xfe
+        if token == 0x00
+          nil
+        elsif token > 0x04 && token < 0xf5
+          get_token(token)
+        elsif token == SHORT_STRING
+          create_string(read_int8)
+        elsif token == LONG_STRING
+          create_string(read_int24)
+        elsif token == LONG_TOKEN
           token = read_int8
-          res   = get_token(token + 0xf5)
-        elsif token == 0xfa
+          get_token(token + 0xf5)
+        elsif token == JID_PAIR
           user   = read_string(read_int8)
           server = read_string(read_int8)
 
           if user.length > 0 && server.length > 0
-            res = "#{user}@#{server}"
+            "#{user}@#{server}"
           elsif server.length > 0
-            res = server
+            server
+          else
+            raise "Cannot create JID"
           end
+        else
+          raise "Invalid token #{token}"
         end
-
-        res
       end
 
       def read_attributes(size)
@@ -123,7 +138,7 @@ module WhatsApp
       end
 
       def is_list_tag(token)
-        (token == 0) || (token == 0xf8) || (token == 0xf9)
+        (token == EMPTY_LIST) || (token == SHORT_LIST) || (token == LONG_LIST)
       end
 
       def read_list(token)
@@ -135,29 +150,27 @@ module WhatsApp
       end
 
       def read_list_size(token)
-        size = 0
-
-        if token == 0xf8
-          size = read_int8
-        elsif token == 0xf9
-          size = read_int16
+        if token == EMPTY_LIST
+          0
+        elsif token == SHORT_LIST
+          read_int8
+        elsif token == LONG_LIST
+          read_int16
         else
           raise "Invalid token #{token}"
         end
-
-        size
       end
 
       def peek_int24(offset = 0)
-        res = 0
+        res = nil
 
-        if @input && @input.bytesize >= 3 + offset
+        if @input.bytesize >= 3 + offset
           res = @input.getbyte(offset) << 16
           res |= @input.getbyte(offset + 1) << 8
           res |= @input.getbyte(offset + 2) << 0
         end
 
-        res
+        res || read_more!
       end
 
       def read_int24
@@ -169,14 +182,14 @@ module WhatsApp
       end
 
       def peek_int16(offset = 0)
-        res = 0
+        res = nil
 
-        if @input && @input.bytesize >= 2 + offset
+        if @input.bytesize >= 2 + offset
           res = @input.getbyte(offset) << 8
           res |= @input.getbyte(offset + 1) << 0
         end
 
-        res
+        res || read_more!
       end
 
       def read_int16
@@ -188,7 +201,7 @@ module WhatsApp
       end
 
       def peek_int8(offset = 0)
-        @input && @input.bytesize >= 1 + offset ? @input.getbyte(offset) : 0
+        @input.bytesize >= 1 + offset ? @input.getbyte(offset) : read_more!
       end
 
       def read_int8
@@ -199,12 +212,12 @@ module WhatsApp
         res
       end
 
-      def fill_array(len)
+      def create_string(length)
         res = ''.force_encoding(BINARY_ENCODING)
 
-        if @input && @input.bytesize >= len
-          res    = @input.byteslice(0, len)
-          @input = @input.byteslice(len..-1)
+        if @input.bytesize >= length
+          res    = @input.byteslice(0, length)
+          @input = @input.byteslice(length..-1)
         end
 
         res

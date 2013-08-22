@@ -26,6 +26,7 @@ module WhatsApp
       PORT                   = 5222
       OPERATION_TIMEOUT      = 2
       CONNECT_TIMEOUT        = 5
+      BUFFER_SIZE            = 16384
 
       BINARY_ENCODING = Encoding.find('binary')
 
@@ -51,9 +52,10 @@ module WhatsApp
       end
 
       def reset
-        @login_status       = :disconnected
-        @incomplete_message = ''.force_encoding(BINARY_ENCODING)
-        @account_info       = nil
+        @login_status = :disconnected
+        @buffer       = ''.force_encoding(BINARY_ENCODING)
+        @read_more    = false
+        @account_info = nil
 
         @challenge      = nil
         @next_challenge = nil
@@ -74,10 +76,10 @@ module WhatsApp
         @socket = WhatsApp::Net::TCPSocket.new(WHATSAPP_HOST, PORT, OPERATION_TIMEOUT, CONNECT_TIMEOUT, @proxy)
       end
 
-      def poll_messages(until_empty = false)
+      def poll_messages(*args)
         begin
           process_inbound_data(read_data)
-        end while until_empty && @incomplete_message.bytesize > 0
+        end while @read_more || @buffer.bytesize > 0
       end
 
       def get_messages
@@ -89,19 +91,21 @@ module WhatsApp
       end
 
       def read_data
-        buffer = ''.force_encoding(BINARY_ENCODING)
+        @read_more = false
+        chunk      = ''.force_encoding(BINARY_ENCODING)
 
         begin
-          @socket.read(1024, buffer)
+          @socket.read(BUFFER_SIZE, chunk)
         rescue OperationTimeout
         end
 
-        if buffer && buffer.bytesize > 0
-          buffer              = @incomplete_message << buffer
-          @incomplete_message = ''.force_encoding(BINARY_ENCODING)
+        if chunk && chunk.bytesize > 0
+          chunk      = @buffer.dup << chunk
+          @buffer    = ''.force_encoding(BINARY_ENCODING)
+          @read_more = chunk.bytesize == BUFFER_SIZE
         end
 
-        buffer
+        chunk
       end
 
       def send_data(data)
@@ -130,7 +134,7 @@ module WhatsApp
         end
 
         retries = 0
-        poll_messages(:until_empty) while ((retries += 1) < 10) && (@login_status != :connected) && !@challenge
+        poll_messages while ((retries += 1) < 10) && (@login_status != :connected) && !@challenge
 
         if @login_status != :connected && @challenge
           session.type = :new
@@ -141,7 +145,7 @@ module WhatsApp
           @reader.keystream = @input_keystream
 
           retries = 0
-          poll_messages(:until_empty) while ((retries += 1) < 10) && (@login_status != :connected)
+          poll_messages while ((retries += 1) < 10) && (@login_status != :connected)
         end
 
         if @login_status == :connected
@@ -167,7 +171,7 @@ module WhatsApp
       end
 
       def send_node(node)
-        debug("\e[30m<- #{node}\e[0m")
+        debug("\e[34m<- #{node}\e[0m")
 
         send_data(@writer.write(node))
       end
@@ -234,8 +238,8 @@ module WhatsApp
 
           node = @reader.next_tree
         end
-      rescue IncompleteMessageException => e
-        @incomplete_message = e.input
+      rescue IncompleteMessageException => error
+        @buffer = error.input
       end
 
       class Session < Struct.new(:type, :authed_at, :next_challenge)
