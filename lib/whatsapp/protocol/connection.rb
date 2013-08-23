@@ -42,13 +42,14 @@ module WhatsApp
         end
       end
 
-      def initialize(number, passive: false, proxy: nil, debug_output: nil)
+      def initialize(number, passive: false, proxy: nil, debug_output: nil, debug_id: nil)
         reset
 
         @number       = number
         @passive      = passive
         @proxy        = proxy
         @debug_output = debug_output
+        @debug_id     = debug_id
       end
 
       def reset
@@ -171,7 +172,7 @@ module WhatsApp
       end
 
       def send_node(node)
-        debug("\e[34m<- #{node}\e[0m")
+        debug("<- #{node}", 34)
 
         send_data(@writer.write(node))
       end
@@ -199,7 +200,7 @@ module WhatsApp
         node = @reader.next_tree(data)
 
         while node
-          debug("\e[32m-> #{node}\e[0m")
+          debug("-> #{node}", 32)
 
           if node.tag == 'challenge'
             @challenge      = node.data
@@ -247,8 +248,14 @@ module WhatsApp
 
       private
 
-      def debug(text)
-        @debug_output.puts(text) if @debug_output
+      def debug(text, color = nil)
+        return unless @debug_output
+
+        text = "[#{@debug_id}] #{text}" if @debug_id
+        text = "\e[#{color}m#{text}\e[0m" if color
+
+        @debug_output.puts(text)
+        end
       end
 
     end
