@@ -255,7 +255,6 @@ module WhatsApp
         text = "\e[#{color}m#{text}\e[0m" if color
 
         @debug_output.puts(text)
-        end
       end
 
     end
