@@ -101,6 +101,10 @@ module WhatsApp
       send_node(Protocol::SetIqNode.new(Protocol::MediaQueryNode.new(fingerprint, type, size), Util::IdGenerator.next, to: Protocol::Connection::WHATSAPP_SERVER))
     end
 
+    def clean_dirty
+      send_node(Protocol::SetIqNode.new(Protocol::CleanDirtyQueryNode.new, Util::IdGenerator.next, to: Protocol::Connection::WHATSAPP_SERVER))
+    end
+
     private
 
     def send_message_node(to, node, *features)
