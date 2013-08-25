@@ -10,6 +10,7 @@ require 'whatsapp/protocol/nodes/auth_response_node'
 require 'whatsapp/protocol/nodes/features_node'
 require 'whatsapp/protocol/nodes/message_received_node'
 require 'whatsapp/protocol/nodes/result_iq_node'
+require 'whatsapp/util/id_generator'
 
 module WhatsApp
   module Protocol
@@ -238,7 +239,7 @@ module WhatsApp
           end
 
           if node.tag == 'presence' && node.attribute('status') == 'dirty'
-            send_node(SetIqNode.new(CleanDirtyQueryNode.new(node), node, to: WHATSAPP_SERVER))
+            send_node(SetIqNode.new(CleanDirtyQueryNode.new(node), Util::IdGenerator.next, to: WHATSAPP_SERVER))
           end
 
           node = @reader.next_tree
