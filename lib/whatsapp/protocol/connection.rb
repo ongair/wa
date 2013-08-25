@@ -191,9 +191,9 @@ module WhatsApp
         @output_keystream.encode("#{@number}#{challenge}#{Time.now.to_i}", false)
       end
 
-      def send_message_received(message)
-        if message.attribute('type') == 'chat' && (request_node = message.child('request'))
-          send_node(MessageReceivedNode.new(message)) if request_node.attribute('xmlns') == 'urn:xmpp:receipts'
+      def send_receipt(message)
+        if (request_node = message.child('request')) && (request_node.attribute('xmlns') == 'urn:xmpp:receipts')
+          send_node(MessageReceivedNode.new(message))
         end
       end
 
@@ -227,7 +227,7 @@ module WhatsApp
           if node.tag == 'message'
             @message_queue << node
 
-            send_message_received(node)
+            send_receipt(node)
           end
 
           if node.tag == 'iq' && node.attribute('type') == 'get' && node.children && node.children.length > 0 && node.children[0].tag == 'ping'
