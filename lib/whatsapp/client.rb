@@ -101,6 +101,10 @@ module WhatsApp
       send_node(Protocol::SetIqNode.new(Protocol::MediaQueryNode.new(fingerprint, type, size), Util::IdGenerator.next, to: Protocol::Connection::WHATSAPP_SERVER))
     end
 
+    def query_privacy
+      send_node(Protocol::GetIqNode.new(Protocol::PrivacyQueryNode.new, Util::IdGenerator.next))
+    end
+
     private
 
     def send_message_node(to, node, *features)
