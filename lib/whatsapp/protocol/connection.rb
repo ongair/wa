@@ -192,7 +192,7 @@ module WhatsApp
 
       def send_message_received(message)
         if message.attribute('type') == 'chat' && (request_node = message.child('request'))
-          send_node(WhatsApp::Protocol::MessageReceivedNode.new(message)) if request_node.attribute('xmlns') == 'urn:xmpp:receipts'
+          send_node(MessageReceivedNode.new(message)) if request_node.attribute('xmlns') == 'urn:xmpp:receipts'
         end
       end
 
@@ -235,6 +235,10 @@ module WhatsApp
 
           if node.tag == 'iq' && node.attribute('type') == 'result' && node.children && node.children.length > 0 && ['query', 'duplicate', 'media'].include?(node.children[0].tag)
             @message_queue << node
+          end
+
+          if node.tag == 'presence' && node.attribute('status') == 'dirty'
+            send_node(SetIqNode.new(CleanDirtyQueryNode.new(node), node, to: WHATSAPP_SERVER))
           end
 
           node = @reader.next_tree

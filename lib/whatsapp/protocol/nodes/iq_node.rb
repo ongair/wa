@@ -8,10 +8,10 @@ module WhatsApp
 
       def initialize(query_nodes, message_id, to: nil, from: nil)
         @to         = to
-        @message_id = message_id
+        @message_id = message_id.is_a?(Node) ? message_id.attribute('id') : message_id
 
         attributes = {
-            id:   message_id,
+            id:   @message_id,
             type: type
         }
 
