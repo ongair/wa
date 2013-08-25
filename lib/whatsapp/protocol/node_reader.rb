@@ -35,17 +35,19 @@ module WhatsApp
 
         read_more! if @input.bytesize < STANZA_HEADER_SIZE
 
-        stanza_flag = (peek_int8 & 0xf0) >> 4
-        stanza_size = peek_int16(1)
+        stanza_header    = peek_int24
+        stanza_flags     = (stanza_header >> 20)
+        stanza_size      = ((stanza_header & 0x0f0000) >> 16) | ((stanza_header & 0xff00) >> 8) | (stanza_header & 0xff)
+        stanza_encrypted = ((stanza_flags & (1 << 4)) != 0)
 
-        read_more! if @input.bytesize < stanza_size
+        read_more! if @input.bytesize < STANZA_HEADER_SIZE + stanza_size
 
         read_int24
 
-        if (stanza_flag & 8) != 0
+        if stanza_encrypted
           if @keystream
             remaining_data = @input.byteslice(stanza_size..-1)
-            @input         = "#{@keystream.decode(@input.byteslice(0, stanza_size))}#{remaining_data}".force_encoding(BINARY_ENCODING)
+            @input         = @keystream.decode(@input.byteslice(0, stanza_size)) << remaining_data
           else
             raise 'No key for encrypted data'
           end

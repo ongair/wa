@@ -42,11 +42,17 @@ module WhatsApp
 
       def flush_buffer
         data = keystream ? keystream.encode(@output) : @output
-        size = data.length
 
-        "#{(keystream ? 16 : 0).chr}#{((size & 0xff00) >> 8).chr}#{(size & 0x00ff).chr}#{data}"
+        stanza_header(data.length, !!keystream) << data
       ensure
         @output.clear
+      end
+
+      def stanza_header(size, encrypted)
+        stanza_flags = ((size & 0x0f0000) >> 16)
+        stanza_flags |= (1 << 4) if encrypted
+
+        ''.force_encoding(BINARY_ENCODING) << stanza_flags << ((size & 0xff00) >> 8) << (size & 0xff)
       end
 
       def write_internal(node)

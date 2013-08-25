@@ -13,11 +13,11 @@ module WhatsApp
         @rc4.encrypt(INIT)
       end
 
-      def encode(data, append = true)
+      def encode(data, append_hash = true)
         data = @rc4.encrypt(data)
         hash = OpenSSL::HMAC.digest('sha1', @key, data).byteslice(0..3)
 
-        append ? data << hash : hash << data
+        append_hash ? data << hash : hash << data
       end
 
       def decode(data)
