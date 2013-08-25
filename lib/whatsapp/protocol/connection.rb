@@ -192,7 +192,7 @@ module WhatsApp
       end
 
       def send_receipt(message)
-        if (request_node = message.child('request')) && (request_node.attribute('xmlns') == 'urn:xmpp:receipts')
+        if (request_node = message.child('request') || message.child('received')) && (request_node.attribute('xmlns') == 'urn:xmpp:receipts')
           send_node(MessageReceivedNode.new(message))
         end
       end
