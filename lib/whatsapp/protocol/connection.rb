@@ -26,7 +26,7 @@ module WhatsApp
       PORT                   = 5222
       OPERATION_TIMEOUT      = 2
       CONNECT_TIMEOUT        = 5
-      BUFFER_SIZE            = 16384
+      BUFFER_SIZE            = 1024
 
       BINARY_ENCODING = Encoding.find('binary')
 
@@ -100,10 +100,10 @@ module WhatsApp
         rescue OperationTimeout
         end
 
-        if chunk && chunk.bytesize > 0
-          chunk      = @buffer.dup << chunk
-          @buffer    = ''.force_encoding(BINARY_ENCODING)
+        if chunk.bytesize > 0
           @read_more = chunk.bytesize == BUFFER_SIZE
+          chunk      = @buffer << chunk
+          @buffer    = ''.force_encoding(BINARY_ENCODING)
         end
 
         chunk
