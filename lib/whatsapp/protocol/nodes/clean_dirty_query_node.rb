@@ -8,7 +8,7 @@ module WhatsApp
 
       def initialize(dirty_node)
         category_nodes = dirty_node.children.select { |child| child.tag == 'category' }.map do |category|
-          CategoryNode.new(category.attribute(name))
+          CategoryNode.new(category.attribute('name'))
         end
 
         super('clean', {xmlns: 'urn:xmpp:whatsapp:dirty'}, category_nodes)
