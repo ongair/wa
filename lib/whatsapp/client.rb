@@ -105,6 +105,10 @@ module WhatsApp
       send_node(Protocol::GetIqNode.new(Protocol::PrivacyQueryNode.new, Util::IdGenerator.next))
     end
 
+    def sync(numbers)
+      send_node(Protocol::GetIqNode.new([Protocol::SyncNode.new(numbers)], Util::IdGenerator.next, to: jid(number), xmlns: 'urn:xmpp:whatsapp:sync'))
+    end
+
     private
 
     def send_message_node(to, node, *features)
