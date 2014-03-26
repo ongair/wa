@@ -27,7 +27,8 @@ module WhatsApp
       private
 
       def generate_sid
-        ((Time.new.to_f + 11644477200) * 10000000).to_i.to_s
+        #((Time.new.to_f + 11644477200) * 10000000).to_i.to_s
+        ((Time.new.to_i + 11644477200) * 10000000).to_s
       end
 
     end
