@@ -40,7 +40,6 @@ module WhatsApp
       end
 
       def compute_mac(data, offset, length)
-        puts "buffer: #{data.to_s}, length: #{data.length.to_s}"
         hmac = OpenSSL::HMAC.new(@mac_key, 'sha1')
         hmac.update(data.byteslice(offset...offset+length))
         arr = [(@@seq >> 24).chr, (@@seq >> 16).chr, (@@seq >> 8).chr, @@seq.chr]
