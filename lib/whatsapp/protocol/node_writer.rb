@@ -41,7 +41,7 @@ module WhatsApp
       private
 
       def flush_buffer
-        data = keystream ? keystream.encode(@output) : @output
+        data = keystream ? keystream.encode(@output, @output.length, 0, @output.length) : @output
 
         stanza_header(data.length, !!keystream) << data
       ensure

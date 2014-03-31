@@ -182,13 +182,11 @@ module WhatsApp
 
       def setup_authentication(password, challenge)
         raw_password = Base64.decode64(password)
-
-        key = PBKDF2.new(hash_function: :sha1, password: raw_password, salt: challenge, iterations: 16, key_length: 20).bin_string
-
-        @input_keystream  = WhatsApp::Protocol::Keystream.new(key)
-        @output_keystream = WhatsApp::Protocol::Keystream.new(key)
-
-        @output_keystream.encode("#{@number}#{challenge}#{Time.now.to_i}", false)
+        keys = WhatsApp::Protocol::Keystream.generate_keys(raw_password, challenge)
+        @input_keystream  = WhatsApp::Protocol::Keystream.new(keys[2], keys[3])
+        @output_keystream = WhatsApp::Protocol::Keystream.new(keys[0], keys[1])
+        arr = "\0\0\0\0#{@number}#{challenge}"
+        @output_keystream.encode(arr, 0, 4, arr.length - 4)
       end
 
       def send_receipt(message)
