@@ -42,7 +42,7 @@ module WhatsApp
       def compute_mac(data, offset, length)
         hmac = OpenSSL::HMAC.new(@mac_key, 'sha1')
         hmac.update(data.byteslice(offset...offset+length))
-        arr = [(@@seq >> 24).chr, (@@seq >> 16).chr, (@@seq >> 8).chr, @@seq.chr]
+        arr = [((@@seq & 0xff000000) >> 24).chr, ((@@seq & 0xff0000) >> 16).chr, ((@@seq & 0xff00) >> 8).chr, (@@seq & 0xff).chr]
         hmac.update(arr.join(''))
         @@seq += 1
         hmac.digest
