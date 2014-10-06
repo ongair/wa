@@ -5,8 +5,8 @@ describe WhatsApp::Protocol::Node do
   it 'should return attribute by name' do
     node = WhatsApp::Protocol::Node.new('my-tag', {'one' => 1, 2 => 'two'})
 
-    node.attribute('one').must_equal 1
-    node.attribute(2).must_equal 'two'
+    expect(node.attribute('one')).to eql(1)
+    expect(node.attribute(2)).to eql('two')
   end
 
   it 'should return child by tag name' do
@@ -28,7 +28,7 @@ describe WhatsApp::Protocol::Node do
         ])
     ])
 
-    node.child('my-child-1-child-1-child-2').must_equal child
+    expect(node.child('my-child-1-child-1-child-2')).to eql(child)
   end
 
 end
