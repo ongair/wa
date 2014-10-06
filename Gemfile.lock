@@ -1,4 +1,10 @@
 GIT
+  remote: git://github.com/emerose/pbkdf2-ruby.git
+  revision: f9a337e3559de7e61792f2c761a91ea57d53e095
+  specs:
+    pbkdf2 (0.2.2)
+
+GIT
   remote: git://github.com/karolsarnacki/ruby-proxifier.git
   revision: 5d91c25aedf85aac4a3e383e67f152416d79a597
   specs:
@@ -11,7 +17,6 @@ PATH
       activesupport
       httmultiparty (~> 0.3.10)
       httparty (~> 0.11.0)
-      pbkdf2-peter_v (~> 0.1.2)
       proxifier (~> 1.0.3)
       ruby-rc4 (~> 0.1.5)
 
@@ -24,6 +29,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
+    coderay (1.1.0)
     diff-lcs (1.2.5)
     httmultiparty (0.3.16)
       httparty (>= 0.7.3)
@@ -34,6 +40,7 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.6.11)
     json (1.8.1)
+    method_source (0.8.2)
     mimemagic (0.2.1)
     minitest (5.4.2)
     multi_json (1.10.1)
@@ -41,7 +48,12 @@ GEM
     multipart-post (2.0.0)
     nyan-cat-formatter (0.10.1)
       rspec (>= 2.99, >= 2.14.2, < 4)
-    pbkdf2-peter_v (0.1.2)
+    pry (0.10.0)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    pry-nav (0.2.4)
+      pry (>= 0.9.10, < 0.11.0)
     rake (10.3.2)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
@@ -56,6 +68,7 @@ GEM
       rspec-support (~> 3.1.0)
     rspec-support (3.1.1)
     ruby-rc4 (0.1.5)
+    slop (3.6.0)
     thread_safe (0.3.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
@@ -66,7 +79,10 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 1.7)
   nyan-cat-formatter
+  pbkdf2!
   proxifier!
+  pry
+  pry-nav
   rake (~> 10.0)
   rspec
   whatsapp!

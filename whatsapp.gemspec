@@ -22,7 +22,8 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'httparty', '~> 0.11.0'
   gem.add_runtime_dependency 'httmultiparty', '~> 0.3.10'
-  gem.add_runtime_dependency 'pbkdf2-peter_v', '~> 0.1.2'
+  # gem.add_runtime_dependency 'pbkdf2-peter_v', '~> 0.1.2'
+  
   gem.add_runtime_dependency 'proxifier', '~> 1.0.3'
   gem.add_runtime_dependency 'ruby-rc4', '~> 0.1.5'
 
@@ -30,5 +31,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "bundler", "~> 1.7"
   gem.add_development_dependency "rake", "~> 10.0"
   gem.add_development_dependency "rspec"
+  gem.add_development_dependency "pry"
+  gem.add_development_dependency "pry-nav"
   gem.add_development_dependency "nyan-cat-formatter"  
 end

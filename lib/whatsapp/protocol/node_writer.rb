@@ -29,6 +29,7 @@ module WhatsApp
       end
 
       def write(node)
+        # binding.pry
         if node
           write_internal(node)
         else
