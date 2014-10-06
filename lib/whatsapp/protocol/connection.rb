@@ -22,7 +22,7 @@ module WhatsApp
       WHATSAPP_GROUP_SERVER  = 'g.us'
       WHATSAPP_STATUS_SERVER = 's.us'
       WHATSAPP_DIGEST        = 'xmpp/s.whatsapp.net'
-      WHATSAPP_VERSION       = '2.11.151'
+      WHATSAPP_VERSION       = '2.11.301'
       DEVICE                 = 'Android'
       PORT                   = 5222
       OPERATION_TIMEOUT      = 2

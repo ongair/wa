@@ -39,6 +39,8 @@ GEM
     multi_json (1.10.1)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
+    nyan-cat-formatter (0.10.1)
+      rspec (>= 2.99, >= 2.14.2, < 4)
     pbkdf2-peter_v (0.1.2)
     rake (10.3.2)
     rspec (3.1.0)
@@ -63,6 +65,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.7)
+  nyan-cat-formatter
   proxifier!
   rake (~> 10.0)
   rspec
