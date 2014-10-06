@@ -31,6 +31,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "bundler", "~> 1.7"
   gem.add_development_dependency "rake", "~> 10.0"
   gem.add_development_dependency "rspec"
+  gem.add_development_dependency "mocha"
   gem.add_development_dependency "pry"
   gem.add_development_dependency "pry-nav"
   gem.add_development_dependency "nyan-cat-formatter"  

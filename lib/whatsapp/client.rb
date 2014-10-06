@@ -6,7 +6,8 @@ Dir[File.join(File.dirname(__FILE__), 'protocol', 'nodes', '*.rb')].each { |file
 module WhatsApp
 
   class Client
-    attr_reader :number, :nickname, :options
+    attr_reader :number, :nickname, :options, :connection
+    # attr_writer :connection
 
     def initialize(number, nickname = nil, options = {})
       @number     = number
