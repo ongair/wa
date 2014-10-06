@@ -31,4 +31,10 @@ describe WhatsApp::Protocol::Node do
     expect(node.child('my-child-1-child-1-child-2')).to eql(child)
   end
 
+  it 'should export to xml' do
+    node = WhatsApp::Protocol::Node.new('my-tag', {'one' => 1, 2 => 'two'})
+    expect(node.to_s).to eql("<my-tag \"one\"=\"1\" \"2\"=\"two\" />")
+    expect(node.to_xml).to eql("<my-tag \"one\"=\"1\" \"2\"=\"two\" />")
+  end
+
 end
