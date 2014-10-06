@@ -19,7 +19,7 @@ describe WhatsApp::Protocol::NodeWriter do
   end
 
   it 'should write empty node' do
-    binding.pry
+    # binding.pry
     expect(@writer.write(nil)).to eql("\x10\x00\x05\xa2\xa8\x65\x3d\x62".b)
   end
 
