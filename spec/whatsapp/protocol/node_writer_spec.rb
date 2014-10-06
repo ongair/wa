@@ -5,7 +5,7 @@ describe WhatsApp::Protocol::NodeWriter do
 
   before do
     key        = PBKDF2.new(hash_function: :sha1, password: 'My secret', salt: 'My challenge', iterations: 16, key_length: 20).bin_string
-    key_stream = WhatsApp::Protocol::Keystream.new(key)
+    key_stream = WhatsApp::Protocol::Keystream.new(key, "")
 
     @writer           = WhatsApp::Protocol::NodeWriter.new
     @writer.keystream = key_stream

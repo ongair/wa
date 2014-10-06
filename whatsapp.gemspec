@@ -26,7 +26,13 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'proxifier', '~> 1.0.3'
   gem.add_runtime_dependency 'ruby-rc4', '~> 0.1.5'
 
-  gem.add_development_dependency 'rake'
-  gem.add_development_dependency 'minitest', '>= 4.6.0'
-  gem.add_development_dependency 'simplecov', '>= 0.7.1'
+  gem.add_dependency 'activesupport'
+  gem.add_development_dependency "bundler", "~> 1.7"
+  gem.add_development_dependency "rake", "~> 10.0"
+  gem.add_development_dependency "rspec"
+
+  # gem.add_development_dependency 'rake'
+  # gem.add_development_dependency "rspec"
+  # gem.add_development_dependency 'minitest', '>= 4.6.0'
+  # gem.add_development_dependency 'simplecov', '>= 0.7.1'
 end
